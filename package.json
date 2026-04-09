@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit -p tsconfig.json && vite build",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "tunnel": "npx cloudflared tunnel --url http://localhost:4173"
   },
   "dependencies": {
     "@ant-design/icons": "^5.3.1",
