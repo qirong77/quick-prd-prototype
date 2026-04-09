@@ -20,7 +20,7 @@ export const SYSTEM_PROMPT = `
 - 表格列宽合理；避免无意义占位符文案。
 
 ### 其他约束
-- antd表单不使用 vertical 布局
+- antd 表单不使用 vertical 布局（layout!="vertical"）
 `.trim();
 
 export type BuildUserContentParams = {
