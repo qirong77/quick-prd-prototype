@@ -14,13 +14,20 @@ export const PrdMilkdownEditor: React.FC<PrdMilkdownEditorProps> = ({
   onChange,
   placeholder = '',
 }) => {
-  const rootRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const activeCrepeRef = useRef<Crepe | null>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
   useLayoutEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    // 每次挂载使用独立子节点，避免 React Strict Mode 下两次 effect 共用同一 DOM 根时
+    // Crepe 创建/销毁竞态导致 Context（如 editorView）错乱。
+    const root = document.createElement('div');
+    root.className = 'prd-milkdown-inner';
+    container.appendChild(root);
 
     const crepe = new Crepe({
       root,
@@ -32,20 +39,31 @@ export const PrdMilkdownEditor: React.FC<PrdMilkdownEditorProps> = ({
         },
       },
     });
+    activeCrepeRef.current = crepe;
 
     crepe.on((listen) => {
       listen.markdownUpdated((_ctx, markdown) => {
-        onChangeRef.current(markdown);
+        if (activeCrepeRef.current === crepe) {
+          onChangeRef.current(markdown);
+        }
       });
     });
 
-    void crepe.create();
+    const createPromise = crepe.create();
 
     return () => {
-      void crepe.destroy();
+      activeCrepeRef.current = null;
+      void createPromise
+        .then(
+          () => crepe.destroy(),
+          () => crepe.destroy()
+        )
+        .finally(() => {
+          root.remove();
+        });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <div ref={rootRef} className="prd-milkdown-root" />;
+  return <div ref={containerRef} className="prd-milkdown-root" />;
 };

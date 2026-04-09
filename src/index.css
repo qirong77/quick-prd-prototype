@@ -42,10 +42,18 @@ body {
 .prd-milkdown-root {
   flex: 1 1 0;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.prd-milkdown-inner {
+  flex: 1 1 0;
+  min-height: 0;
   overflow: auto;
 }
 
-.prd-milkdown-root .milkdown {
+.prd-milkdown-inner .milkdown {
   min-height: 100%;
 }
 
