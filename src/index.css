@@ -5,9 +5,28 @@ body,
   margin: 0;
 }
 
+html {
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
     Arial, 'Noto Sans', sans-serif;
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+#root {
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* ChatPanel：左侧栏剩余高度由 flex 分配，输入框填满包裹层 */
@@ -161,6 +180,20 @@ body {
   fill: rgba(0, 0, 0, 0.45);
 }
 
+/* 主布局：避免窄屏下 minmax(360px) 撑出横向滚动 */
+.app-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, min(46vw, 520px)) minmax(0, 1fr);
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.app-panel-column {
+  min-width: 0;
+}
+
 /* 预览区 Tabs 撑满高度，代码 Tab 内 Monaco 可伸展 */
 .preview-panel-tabs.ant-tabs {
   display: flex;
@@ -176,17 +209,54 @@ body {
 
 .preview-panel-tabs .ant-tabs-content {
   height: 100%;
+  min-height: 0;
 }
 
 .preview-panel-tabs .ant-tabs-tabpane {
   height: 100%;
+  min-height: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .preview-panel-tabs .ant-tabs-tabpane-active {
   display: flex !important;
   flex-direction: column;
   min-height: 0;
+}
+
+/* 预览 Tab：内部区域可纵向滚动 */
+.preview-tab-preview-root {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.preview-spin-fill {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex !important;
+  flex-direction: column;
+}
+
+.preview-spin-fill .ant-spin-container {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.preview-tab-scroll-inner {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .preview-code-tab {

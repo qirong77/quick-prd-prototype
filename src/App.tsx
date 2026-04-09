@@ -51,25 +51,28 @@ const App: React.FC = () => {
 
   return (
     <ConfigProvider locale={zhCN}>
-      <Layout style={{ minHeight: '100%' }}>
+      <Layout style={{ minHeight: '100%', minWidth: 0, overflow: 'hidden' }}>
         <Header
           style={{
             background: '#001529',
             display: 'flex',
             alignItems: 'center',
             paddingInline: 24,
+            minWidth: 0,
           }}
         >
-          <Title level={4} style={{ color: '#fff', margin: 0 }}>
+          <Title
+            level={4}
+            ellipsis
+            style={{ color: '#fff', margin: 0, flex: 1, minWidth: 0 }}
+          >
             Quick PRD 原型（MIS 风格 / antd4）
           </Title>
         </Header>
-        <Content style={{ padding: 16 }}>
+        <Content style={{ padding: 16, minWidth: 0, overflow: 'hidden' }}>
           <div
+            className="app-main-grid"
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'minmax(360px, min(46vw, 520px)) 1fr',
-              gap: 16,
               height: 'calc(100vh - 32px - 64px)',
               minHeight: 520,
             }}

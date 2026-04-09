@@ -24,6 +24,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
   return (
     <Card
+      className="app-panel-column"
       title="PRD / 对话"
       size="small"
       style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}

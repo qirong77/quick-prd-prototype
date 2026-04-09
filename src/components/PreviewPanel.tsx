@@ -33,6 +33,9 @@ const RunnerPreview: React.FC<RunnerPreviewProps> = ({ code, scope }) => {
               background: '#fafafa',
               border: '1px solid #f0f0f0',
               borderRadius: 4,
+              minWidth: 0,
+              maxWidth: '100%',
+              boxSizing: 'border-box',
             }}
           >
             {element}
@@ -103,23 +106,31 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
   return (
     <Card
+      className="app-panel-column"
       title="生成结果"
       size="small"
-      style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-      bodyStyle={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+      style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}
+      bodyStyle={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}
     >
-      <Tabs className="preview-panel-tabs" style={{ flex: 1, overflow: 'hidden' }}>
+      <Tabs className="preview-panel-tabs" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
         <TabPane tab="预览" key="preview">
-          <Spin spinning={loading} size="large" tip="正在生成，请稍候…" style={{ display: 'block', minHeight: 240 }}>
-            <div style={{ overflow: 'auto', flex: 1, minHeight: 240 }}>
-              {validationError ? (
-                <Alert type="warning" showIcon message={validationError} style={{ marginBottom: 12 }} />
-              ) : null}
-              {shouldRun ? (
-                <RunnerPreview key={runnerCode} code={runnerCode} scope={scope} />
-              ) : null}
-            </div>
-          </Spin>
+          <div className="preview-tab-preview-root">
+            <Spin
+              spinning={loading}
+              size="large"
+              tip="正在生成，请稍候…"
+              wrapperClassName="preview-spin-fill"
+            >
+              <div className="preview-tab-scroll-inner">
+                {validationError ? (
+                  <Alert type="warning" showIcon message={validationError} style={{ marginBottom: 12 }} />
+                ) : null}
+                {shouldRun ? (
+                  <RunnerPreview key={runnerCode} code={runnerCode} scope={scope} />
+                ) : null}
+              </div>
+            </Spin>
+          </div>
         </TabPane>
         <TabPane tab="代码" key="code">
           <div className="preview-code-tab">
