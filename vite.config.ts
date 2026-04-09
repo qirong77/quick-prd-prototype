@@ -127,6 +127,7 @@ export default defineConfig({
   },
   preview: {
     allowedHosts: true,
+    port:4096
   },
   build: {
     rollupOptions: {
