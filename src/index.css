@@ -212,15 +212,15 @@ body {
   min-height: 0;
 }
 
+/* 勿对全部 .ant-tabs-tabpane 写 display:flex：特异性会压过
+   .ant-tabs-tabpane-hidden { display:none }，导致两个 Tab 内容同时露出、切换「无效」。 */
 .preview-panel-tabs .ant-tabs-tabpane {
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
-.preview-panel-tabs .ant-tabs-tabpane-active {
+.preview-panel-tabs .ant-tabs-tabpane.ant-tabs-tabpane-active {
   display: flex !important;
   flex-direction: column;
   min-height: 0;
