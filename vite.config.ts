@@ -125,7 +125,29 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
-  preview:{
-    allowedHosts:true,
+  preview: {
+    allowedHosts: true,
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        // @codemirror/language-data 为每种语言单独 dynamic import，会拆成上百个 chunk。
+        // 将 CodeMirror / Lezer / Milkdown 生态分别打成少数 vendor 包，显著减少请求数。
+        experimentalMinChunkSize: 80_000,
+        manualChunks(id) {
+          const m = id.replace(/\\/g, '/');
+          if (!m.includes('node_modules')) return;
+          if (m.includes('@lezer') || m.includes('@codemirror')) return 'codemirror';
+          if (m.includes('@milkdown') || m.includes('prosemirror')) return 'milkdown';
+          if (m.includes('monaco-editor') || m.includes('@monaco-editor')) return 'monaco';
+          if (m.includes('katex')) return 'katex';
+          if (m.includes('/antd/') || m.includes('@ant-design') || m.includes('node_modules/rc-')) {
+            return 'antd';
+          }
+          if (m.includes('node_modules/react-dom/')) return 'react';
+          if (m.includes('node_modules/react/')) return 'react';
+        },
+      },
+    },
   },
 });
