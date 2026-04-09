@@ -15,7 +15,7 @@ import {
   message,
   Modal,
 } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 
