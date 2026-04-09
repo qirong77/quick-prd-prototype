@@ -84,7 +84,7 @@ function anthropicProxyPlugin(): PluginOption {
             messages: [{ role: 'user', content: userContent }],
           }),
         });
-        console.log(SYSTEM_PROMPT,userContent)
+
         res.statusCode = upstream.status;
         const ct = upstream.headers.get('content-type');
         if (ct) res.setHeader('Content-Type', ct);

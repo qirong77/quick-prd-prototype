@@ -14,7 +14,7 @@ export const TEMPLATE: TemplateDef = {
   key: 'list_standard',
   label: '标准列表页（搜索 + 表格 + 抽屉）',
   instruction:
-    '按【产品描述】生成标准后台列表页',
+    '根据下方【产品描述 / PRD】生成「标准后台列表页」：实现 PRD 中各节的控件与交互；将「一、搜索栏」映射为页顶筛选表单，「二、操作栏」为表格上方按钮区，「三、表格项」为 Table 列与单元格展示，「四、表格操作」为行内或批量操作（查看/编辑等用 Drawer 或 Modal）。若某节在 PRD 中未出现，可省略或极简占位。',
   prdOutlineExample: `
 # 一、搜索栏
 | 名称 | 类型 |
@@ -43,7 +43,7 @@ export const TEMPLATE: TemplateDef = {
 | 编辑 | 内容同查看，但是可以编辑，有一个提交按钮 |
 `,
   prdPlaceholder:
-    '请按模板结构撰写：# 一、搜索项 → # 二、表格项 → # 三、表格操作（## 查看 / ## 编辑 …）。可参考上方「结构范例」。',
+    '建议按范例分节撰写：一、搜索栏 → 二、操作栏 → 三、表格项 → 四、表格操作（含查看/编辑等行为说明）。可参考界面上的结构范例。',
 };
 
 export function getTemplate(): TemplateDef {
