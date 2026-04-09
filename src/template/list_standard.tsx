@@ -66,9 +66,7 @@ export default function Prototype() {
   const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
   const [editDrawerOpen, setEditDrawerOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [currentRecord, setCurrentRecord] = useState<any>(null);
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const handleSearch = () => {
     message.info('搜索成功');
@@ -128,23 +126,6 @@ export default function Prototype() {
     });
   };
 
-  const handleDeleteOpen = () => {
-    if (selectedRowKeys.length === 0) {
-      message.warning('请先选择要删除的订单');
-      return;
-    }
-    setDeleteModalOpen(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    setDataSource((prev) =>
-      prev.filter((item) => !selectedRowKeys.includes(item.key))
-    );
-    setSelectedRowKeys([]);
-    message.success('删除成功');
-    setDeleteModalOpen(false);
-  };
-
   const statusTagMap: Record<string, { color: string; label: string }> = {
     completed: { color: 'green', label: '已完成' },
     cancelled: { color: 'red', label: '已取消' },
@@ -193,16 +174,8 @@ export default function Prototype() {
     },
   ];
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (keys: React.Key[]) => {
-      setSelectedRowKeys(keys);
-    },
-  };
-
   return (
     <div style={{ padding: 20, background: '#f0f2f5', minHeight: '100vh' }}>
-
       {/* 筛选区 */}
       <div
         style={{
@@ -265,9 +238,6 @@ export default function Prototype() {
         <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateOpen}>
           新建订单
         </Button>
-        <Button danger icon={<DeleteOutlined />} onClick={handleDeleteOpen}>
-          删除订单
-        </Button>
       </div>
 
       {/* 表格 */}
@@ -276,7 +246,6 @@ export default function Prototype() {
           columns={columns}
           dataSource={dataSource}
           rowKey="key"
-          rowSelection={rowSelection}
           pagination={{
             showSizeChanger: true,
             showQuickJumper: true,
@@ -407,19 +376,6 @@ export default function Prototype() {
             </Select>
           </Form.Item>
         </Form>
-      </Modal>
-
-      {/* 删除订单弹窗 */}
-      <Modal
-        title="删除订单"
-        open={deleteModalOpen}
-        onCancel={() => setDeleteModalOpen(false)}
-        onOk={handleDeleteConfirm}
-        okText="确定"
-        cancelText="取消"
-        okButtonProps={{ danger: true }}
-      >
-        <p>确定要删除选中的 {selectedRowKeys.length} 条订单吗？</p>
       </Modal>
     </div>
   );
