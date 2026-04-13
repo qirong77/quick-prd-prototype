@@ -241,6 +241,14 @@ body {
   overflow: hidden;
 }
 
+/*
+ * 最后一项 antd 默认 border-bottom: 0；本面板折叠时仍占满剩余高度，需在标题行保留底边，
+ * 否则「需求描述」折叠后标题与下方留白连成一片。
+ */
+.chat-panel-collapse-panel-prd.ant-collapse-item:not(.ant-collapse-item-active) > .ant-collapse-header {
+  border-bottom: 1px solid var(--app-border) !important;
+}
+
 .chat-panel-collapse-panel-prd .ant-collapse-content {
   flex: 1 1 0 !important;
   min-height: 0;
