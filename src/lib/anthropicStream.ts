@@ -1,5 +1,7 @@
 export type StreamRequestBody = {
   prdText: string;
+  /** 为空时由服务端回退为默认 SYSTEM_PROMPT */
+  systemPrompt?: string;
   model?: string;
   max_tokens?: number;
 };

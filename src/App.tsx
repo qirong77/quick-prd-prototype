@@ -8,7 +8,8 @@ import { PreviewPanel } from './components/PreviewPanel';
 import { streamAnthropicAssistantText } from './lib/anthropicStream';
 import { getAnthropicModelIds, getDefaultAnthropicModelId } from './lib/modelList';
 import { getDefaultCodeForTemplate } from './template/defaultCodeRaw';
-import { getTemplate } from './templates';
+import { SYSTEM_PROMPT } from './prompts/system';
+import { getDefaultPrdText } from './templates';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -17,7 +18,8 @@ const App: React.FC = () => {
   const modelIds = useMemo(() => getAnthropicModelIds(), []);
   const [modelId, setModelId] = useState(() => getDefaultAnthropicModelId(modelIds));
 
-  const [prdText, setPrdText] = useState(() => getTemplate().prdOutlineExample);
+  const [prdText, setPrdText] = useState(() => getDefaultPrdText());
+  const [systemPrompt, setSystemPrompt] = useState(() => SYSTEM_PROMPT);
   const [streamingText, setStreamingText] = useState('');
   const [loading, setLoading] = useState(false);
   const [previewTabKey, setPreviewTabKey] = useState('preview');
@@ -33,7 +35,7 @@ const App: React.FC = () => {
     setStreamingText('');
     try {
       const full = await streamAnthropicAssistantText(
-        { prdText, model: modelId },
+        { prdText, systemPrompt, model: modelId },
         (acc) => setStreamingText(acc),
         ac.signal,
       );
@@ -50,7 +52,7 @@ const App: React.FC = () => {
       setLoading(false);
       abortRef.current = null;
     }
-  }, [prdText, modelId]);
+  }, [prdText, systemPrompt, modelId]);
 
   const onStop = useCallback(() => {
     abortRef.current?.abort();
@@ -87,6 +89,8 @@ const App: React.FC = () => {
             <ChatPanel
               prdText={prdText}
               onPrdText={setPrdText}
+              systemPrompt={systemPrompt}
+              onSystemPrompt={setSystemPrompt}
               loading={loading}
               onGenerate={onGenerate}
               onStop={onStop}

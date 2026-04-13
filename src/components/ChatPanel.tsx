@@ -8,6 +8,8 @@ const { Text, Paragraph } = Typography;
 export type ChatPanelProps = {
     prdText: string;
     onPrdText: (v: string) => void;
+    systemPrompt: string;
+    onSystemPrompt: (v: string) => void;
     loading: boolean;
     onGenerate: () => void;
     onStop: () => void;
@@ -16,7 +18,18 @@ export type ChatPanelProps = {
     onModelId: (v: string) => void;
 };
 
-export const ChatPanel: React.FC<ChatPanelProps> = ({ prdText, onPrdText, loading, onGenerate, onStop, modelIds, modelId, onModelId }) => {
+export const ChatPanel: React.FC<ChatPanelProps> = ({
+    prdText,
+    onPrdText,
+    systemPrompt,
+    onSystemPrompt,
+    loading,
+    onGenerate,
+    onStop,
+    modelIds,
+    modelId,
+    onModelId,
+}) => {
     const currentTemplate = getTemplate();
 
     return (
@@ -49,6 +62,31 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ prdText, onPrdText, loadin
 
                 <div
                     style={{
+                        flex: "0 0 auto",
+                        minHeight: 0,
+                        maxHeight: "38%",
+                        display: "flex",
+                        flexDirection: "column",
+                        minWidth: 0,
+                    }}
+                >
+                    <Text strong style={{ flexShrink: 0 }}>
+                        系统提示词
+                    </Text>
+                    <Paragraph type="secondary" style={{ marginTop: 6, marginBottom: 0, fontSize: 12, flexShrink: 0 }}>
+                        控制角色、输出契约与技术栈约束；留空则使用内置默认。
+                    </Paragraph>
+                    <div className="chat-panel-system-editor-wrap">
+                        <PrdMarkdownTextarea
+                            value={systemPrompt}
+                            onChange={onSystemPrompt}
+                            placeholder="系统提示词"
+                        />
+                    </div>
+                </div>
+
+                <div
+                    style={{
                         flex: 1,
                         minHeight: 120,
                         display: "flex",
@@ -60,7 +98,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ prdText, onPrdText, loadin
                         需求描述
                     </Text>
                     <Paragraph type="secondary" style={{ marginTop: 6, marginBottom: 0, fontSize: 12, flexShrink: 0 }}>
-                        下方为结构范例，可直接在框内修改。
+                        下方为从模板解析的结构范例，可直接在框内修改。
                     </Paragraph>
                     <div className="chat-panel-prd-editor-wrap">
                         <PrdMarkdownTextarea

@@ -7,7 +7,7 @@ import { validateGeneratedTsx } from '../lib/validateGeneratedTsx';
 import { PreviewErrorBoundary } from './PreviewErrorBoundary';
 
 const { Paragraph } = Typography;
-const { TabPane } = Tabs;
+const { TabItem } = Tabs;
 
 type RunnerPreviewProps = {
   code: string;
@@ -121,7 +121,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
         activeKey={activeTabKey}
         onChange={onTabChange}
       >
-        <TabPane tab="预览" key="preview">
+        <TabItem tab="预览" key="preview">
           <div className="preview-tab-preview-root">
             <Spin
               spinning={loading}
@@ -139,8 +139,8 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
               </div>
             </Spin>
           </div>
-        </TabPane>
-        <TabPane tab="日志" key="log">
+        </TabItem>
+        <TabItem tab="日志" key="log">
           <div className="preview-log-tab">
             <Space direction="vertical" size="small" style={{ width: '100%', flexShrink: 0 }}>
               <Space wrap>
@@ -160,7 +160,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
             </Space>
             <pre className="preview-log-body">{streamingText}</pre>
           </div>
-        </TabPane>
+        </TabItem>
       </Tabs>
     </Card>
   );

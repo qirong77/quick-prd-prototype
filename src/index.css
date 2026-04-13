@@ -46,6 +46,46 @@ body {
   line-height: 1.5;
 }
 
+/* 系统提示词：较矮的编辑区，与 PRD 共用样式逻辑 */
+.chat-panel-system-editor-wrap {
+  flex: 1 1 0;
+  min-height: 300px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.chat-panel-system-editor-wrap > .ant-input-textarea {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-panel-system-editor-wrap textarea.ant-input {
+  flex: 1 1 0;
+  min-height: 72px;
+  max-height: 100%;
+  width: 100% !important;
+  border: none !important;
+  border-radius: 0;
+  resize: none !important;
+  box-shadow: none !important;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 8px 10px 10px;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.chat-panel-system-editor-wrap textarea.ant-input:focus {
+  box-shadow: none !important;
+}
+
 /* PRD：轻量 Markdown 原文编辑区（antd TextArea） */
 .chat-panel-prd-editor-wrap {
   flex: 1 1 0;

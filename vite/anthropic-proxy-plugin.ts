@@ -50,6 +50,10 @@ function attachAnthropicProxy(server: ViteDevServer | PreviewServer) {
     }
 
     const prdText = typeof body.prdText === 'string' ? body.prdText : '';
+    const systemFromBody =
+      typeof body.systemPrompt === 'string' && body.systemPrompt.length > 0
+        ? body.systemPrompt
+        : SYSTEM_PROMPT;
     const model =
       typeof body.model === 'string' && body.model.length > 0
         ? body.model
@@ -73,7 +77,7 @@ function attachAnthropicProxy(server: ViteDevServer | PreviewServer) {
         model,
         max_tokens: maxTokens,
         stream: true,
-        system: SYSTEM_PROMPT,
+        system: systemFromBody,
         messages: [{ role: 'user', content: userContent }],
       }),
     });
