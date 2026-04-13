@@ -47,7 +47,7 @@ export function buildAnthropicUserContent(params: BuildUserContentParams): strin
     '【产品描述 / PRD】',
     prd || '（用户未填写：请根据模板自行构思一个合理的示例业务列表页，并写出完整 tsx。）',
   ];
-  const baseline = getDefaultTemplateCode().trim();
+  const baseline = String(getDefaultTemplateCode() ?? '').trim();
   if (baseline) {
     parts.push(
       '',

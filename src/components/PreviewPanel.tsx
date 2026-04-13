@@ -110,7 +110,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
         activeKey={activeTabKey}
         onChange={onTabChange}
       >
-        <Tabs.TabPane tab="预览" key="preview">
+        <Tabs.TabItem tab="预览" key="preview">
           <div className="preview-tab-preview-root">
             <Spin
               spinning={loading}
@@ -128,8 +128,8 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
               </div>
             </Spin>
           </div>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="日志" key="log">
+        </Tabs.TabItem>
+        <Tabs.TabItem tab="日志" key="log">
           <div className="preview-log-tab">
             <Space direction="vertical" size="small" style={{ width: '100%', flexShrink: 0 }}>
               <Paragraph copyable={{ text: streamingText }} style={{ marginBottom: 0 }}>
@@ -144,7 +144,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
             </Space>
             <pre className="preview-log-body">{streamingText}</pre>
           </div>
-        </Tabs.TabPane>
+        </Tabs.TabItem>
       </Tabs>
     </Card>
   );
