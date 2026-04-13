@@ -75,7 +75,7 @@ const App: React.FC = () => {
             ellipsis
             style={{ color: '#fff', margin: 0, flex: 1, minWidth: 0 }}
           >
-            Quick PRD 原型（MIS 风格 / antd4）
+            Quick PRD Prototype - 快速生成前端交互示例
           </Title>
         </Header>
         <Content style={{ padding: 16, minWidth: 0, overflow: 'hidden' }}>

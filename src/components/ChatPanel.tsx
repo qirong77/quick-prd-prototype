@@ -56,10 +56,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                     gap: 12,
                 }}
             >
-                <Paragraph type="secondary" style={{ marginBottom: 0, flexShrink: 0 }}>
-                    本工具适用于本地原型，产物非生产代码。
-                </Paragraph>
-
                 <div
                     style={{
                         flex: "0 0 auto",
