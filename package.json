@@ -8,8 +8,8 @@
     "build": "vite build",
     "preprepare": "npm run build",
     "preview": "vite preview --host",
-    "build:remote": "vite build --config vite.config.remote.ts",
-    "preview:remote": "vite preview --config vite.config.remote.ts --host",
+    "build:remote": "vite build --mode remote",
+    "preview:remote": "vite preview --mode remote",
     "tunnel": "npx cloudflared tunnel --url http://localhost:4173"
   },
   "dependencies": {
