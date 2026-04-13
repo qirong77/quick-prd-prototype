@@ -1,9 +1,10 @@
-import { Button, Card, Select, Typography } from "antd";
+import { Button, Card, Collapse, Select, Typography } from "antd";
 import React from "react";
 import { getTemplate } from "../templates";
 import { PrdMarkdownTextarea } from "./PrdMarkdownTextarea";
 
-const { Text, Paragraph } = Typography;
+const { Text } = Typography;
+const { Panel } = Collapse;
 
 export type ChatPanelProps = {
     prdText: string;
@@ -56,54 +57,57 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                     gap: 12,
                 }}
             >
-                <div
-                    style={{
-                        flex: "0 0 auto",
-                        minHeight: 0,
-                        maxHeight: "38%",
-                        display: "flex",
-                        flexDirection: "column",
-                        minWidth: 0,
-                    }}
+                <Collapse
+                    defaultActiveKey={["system", "prd"]}
+                    className="chat-panel-collapse"
+                    expandIconPosition="end"
                 >
-                    <Text strong style={{ flexShrink: 0 }}>
-                        系统提示词
-                    </Text>
-                    <Paragraph type="secondary" style={{ marginTop: 6, marginBottom: 0, fontSize: 12, flexShrink: 0 }}>
-                        控制角色、输出契约与技术栈约束；留空则使用内置默认。
-                    </Paragraph>
-                    <div className="chat-panel-system-editor-wrap">
-                        <PrdMarkdownTextarea
-                            value={systemPrompt}
-                            onChange={onSystemPrompt}
-                            placeholder="系统提示词"
-                        />
-                    </div>
-                </div>
-
-                <div
-                    style={{
-                        flex: 1,
-                        minHeight: 120,
-                        display: "flex",
-                        flexDirection: "column",
-                        minWidth: 0,
-                    }}
-                >
-                    <Text strong style={{ flexShrink: 0 }}>
-                        需求描述
-                    </Text>
-                    <Paragraph type="secondary" style={{ marginTop: 6, marginBottom: 0, fontSize: 12, flexShrink: 0 }}>
-                        下方为从模板解析的结构范例，可直接在框内修改。
-                    </Paragraph>
-                    <div className="chat-panel-prd-editor-wrap">
-                        <PrdMarkdownTextarea
-                            value={prdText}
-                            onChange={onPrdText}
-                            placeholder={currentTemplate.prdPlaceholder}
-                        />
-                    </div>
-                </div>
+                    <Panel
+                        key="system"
+                        className="chat-panel-collapse-panel-system"
+                        header={
+                            <div className="chat-panel-collapse-header-inner">
+                                <Text strong>系统提示词</Text>
+                                <Text type="secondary" className="chat-panel-collapse-header-desc">
+                                    控制角色、输出契约与技术栈约束；留空则使用内置默认。
+                                </Text>
+                            </div>
+                        }
+                    >
+                        <div className="chat-panel-system-panel-body">
+                            <div className="chat-panel-system-editor-wrap chat-panel-system-editor-wrap--autosize">
+                                <PrdMarkdownTextarea
+                                    value={systemPrompt}
+                                    onChange={onSystemPrompt}
+                                    placeholder="系统提示词"
+                                    autoSize={{ minRows: 5, maxRows: 16 }}
+                                />
+                            </div>
+                        </div>
+                    </Panel>
+                    <Panel
+                        key="prd"
+                        className="chat-panel-collapse-panel-prd"
+                        header={
+                            <div className="chat-panel-collapse-header-inner">
+                                <Text strong>需求描述</Text>
+                                <Text type="secondary" className="chat-panel-collapse-header-desc">
+                                    下方为从模板解析的结构范例，可直接在框内修改。
+                                </Text>
+                            </div>
+                        }
+                    >
+                        <div className="chat-panel-prd-panel-body">
+                            <div className="chat-panel-prd-editor-wrap">
+                                <PrdMarkdownTextarea
+                                    value={prdText}
+                                    onChange={onPrdText}
+                                    placeholder={currentTemplate.prdPlaceholder}
+                                />
+                            </div>
+                        </div>
+                    </Panel>
+                </Collapse>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <Button type="primary" onClick={onGenerate} loading={loading}>
                         生成

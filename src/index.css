@@ -29,6 +29,89 @@ body {
   max-width: 100%;
 }
 
+/* Collapse：自定义的 display:flex !important 会压过 .ant-collapse-content-hidden，导致折叠无效 */
+.chat-panel-collapse .ant-collapse-content.ant-collapse-content-hidden {
+  display: none !important;
+}
+
+.chat-panel-collapse-header-inner {
+  display: flex;
+  flex-direction: row;
+
+  gap: 8px;
+  align-items: center;
+  max-width: 100%;
+}
+
+.chat-panel-collapse-header-desc {
+  display: block;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: normal;
+}
+
+/* ChatPanel：Collapse 占满 Card 中部；系统提示词随内容高度，需求描述独占剩余高度 */
+.chat-panel-collapse.ant-collapse {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.chat-panel-collapse > .ant-collapse-item {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.chat-panel-collapse-panel-system.ant-collapse-item {
+  flex: 0 0 auto;
+}
+
+.chat-panel-collapse-panel-system .ant-collapse-content {
+  flex: 0 0 auto !important;
+}
+
+.chat-panel-collapse-panel-system .ant-collapse-content-box {
+  flex: 0 0 auto !important;
+}
+
+.chat-panel-collapse-panel-prd.ant-collapse-item {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chat-panel-collapse-panel-prd .ant-collapse-content {
+  flex: 1 1 0 !important;
+  min-height: 0;
+  display: flex !important;
+  flex-direction: column;
+}
+
+.chat-panel-collapse-panel-prd .ant-collapse-content-box {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-panel-system-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-panel-prd-panel-body {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 /* ChatPanel：左侧栏剩余高度由 flex 分配，输入框填满包裹层 */
 .chat-panel-textarea-wrap {
   flex: 1 1 0;
@@ -46,30 +129,27 @@ body {
   line-height: 1.5;
 }
 
-/* 系统提示词：较矮的编辑区，与 PRD 共用样式逻辑 */
+/* 系统提示词：高度由 autoSize 决定；内层滚动，不再套一层边框 */
 .chat-panel-system-editor-wrap {
-  flex: 1 1 0;
-  min-height: 300px;
-  margin-top: 8px;
   display: flex;
   flex-direction: column;
-  border: 1px solid #d9d9d9;
+  border: none;
   border-radius: 4px;
   overflow: hidden;
-  background: #fff;
+  background: transparent;
 }
 
-.chat-panel-system-editor-wrap > .ant-input-textarea {
-  flex: 1 1 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+.chat-panel-system-editor-wrap--autosize {
+  flex: 0 0 auto;
+  max-height: min(42vh, 360px);
+  overflow: auto;
 }
 
-.chat-panel-system-editor-wrap textarea.ant-input {
-  flex: 1 1 0;
-  min-height: 72px;
-  max-height: 100%;
+.chat-panel-system-editor-wrap--autosize > .ant-input-textarea {
+  display: block;
+}
+
+.chat-panel-system-editor-wrap--autosize textarea.ant-input {
   width: 100% !important;
   border: none !important;
   border-radius: 0;
@@ -82,7 +162,7 @@ body {
   color: rgba(0, 0, 0, 0.88);
 }
 
-.chat-panel-system-editor-wrap textarea.ant-input:focus {
+.chat-panel-system-editor-wrap--autosize textarea.ant-input:focus {
   box-shadow: none !important;
 }
 
@@ -90,13 +170,12 @@ body {
 .chat-panel-prd-editor-wrap {
   flex: 1 1 0;
   min-height: 0;
-  margin-top: 8px;
   display: flex;
   flex-direction: column;
-  border: 1px solid #d9d9d9;
+  border: none;
   border-radius: 4px;
   overflow: hidden;
-  background: #fff;
+  background: transparent;
 }
 
 .chat-panel-prd-editor-wrap > .ant-input-textarea {
