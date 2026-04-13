@@ -89,6 +89,14 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
     return fb.length > 0 ? fb : null;
   }, [extracted, loading, streamingText, fallbackCode]);
 
+  /** 生成结束后代码区展示：优先已提取 tsx，否则完整模型原文，再否则模板 */
+  const finalEditorCode = useMemo(() => {
+    if (extracted) return extracted;
+    const raw = streamingText.trim();
+    if (raw.length > 0) return streamingText;
+    return fallbackCode.trim();
+  }, [extracted, streamingText, fallbackCode]);
+
   const validationError = useMemo(
     () => (effectiveCode ? validateGeneratedTsx(effectiveCode) : null),
     [effectiveCode],
@@ -98,8 +106,8 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
   const shouldRun = Boolean(runnerCode.trim());
 
   const handleDownload = () => {
-    if (!effectiveCode) return;
-    const blob = new Blob([effectiveCode], { type: 'text/plain;charset=utf-8' });
+    if (!finalEditorCode.trim()) return;
+    const blob = new Blob([finalEditorCode], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -144,32 +152,44 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
         <TabPane tab="代码" key="code">
           <div className="preview-code-tab">
             <Space direction="vertical" size="small" style={{ width: '100%', flexShrink: 0 }}>
-              <Button type="link" onClick={handleDownload} disabled={!effectiveCode}>
+              <Button type="link" onClick={handleDownload} disabled={loading || !finalEditorCode.trim()}>
                 下载 Prototype.tsx
               </Button>
-              <Paragraph copyable={{ text: effectiveCode ?? '' }} style={{ marginBottom: 0 }}>
-                {extracted
-                  ? '已提取模型输出的 tsx，可复制或下载。'
-                  : effectiveCode
-                    ? '当前为模板默认代码；生成成功后将替换为模型输出。'
-                    : '尚未获得可展示的 tsx。'}
+              <Paragraph
+                copyable={{ text: loading ? streamingText : finalEditorCode }}
+                style={{ marginBottom: 0 }}
+              >
+                {loading
+                  ? streamingText.trim()
+                    ? '正在接收流式输出（下方为实时原文）。'
+                    : '等待模型输出…'
+                  : extracted
+                    ? '已提取模型输出的 tsx，可复制或下载。'
+                    : finalEditorCode.trim()
+                      ? '以下为完整模型输出；若含 ```tsx 代码块将用于预览。'
+                      : '尚未获得可展示的 tsx。'}
               </Paragraph>
             </Space>
             <div className="preview-monaco-wrap">
-              <Editor
-                height="100%"
-                language="typescript"
-                theme="vs-dark"
-                value={effectiveCode ?? streamingText}
-                options={{
-                  readOnly: true,
-                  minimap: { enabled: false },
-                  fontSize: 13,
-                  wordWrap: 'on',
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                }}
-              />
+              {loading ? (
+                <pre className="preview-streaming-code">{streamingText}</pre>
+              ) : (
+                <Editor
+                  key="monaco-after-stream"
+                  height="100%"
+                  language="typescript"
+                  theme="vs-dark"
+                  value={finalEditorCode}
+                  options={{
+                    readOnly: true,
+                    minimap: { enabled: false },
+                    fontSize: 13,
+                    wordWrap: 'on',
+                    scrollBeyondLastLine: false,
+                    automaticLayout: true,
+                  }}
+                />
+              )}
             </div>
           </div>
         </TabPane>
