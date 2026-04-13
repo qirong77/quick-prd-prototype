@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -75,22 +74,6 @@ function remoteExternalPlugin(): Plugin {
   };
 }
 
-/** 构建产物入口为 index.html，便于 nginx / python -m http.server 默认打开 */
-function renameRemoteHtmlPlugin(): Plugin {
-  return {
-    name: 'rename-remote-html-to-index',
-    closeBundle() {
-      const outDir = path.resolve(__dirname, 'remotedist');
-      const from = path.join(outDir, 'index.remote.html');
-      const to = path.join(outDir, 'index.html');
-      if (fs.existsSync(from)) {
-        if (fs.existsSync(to)) fs.unlinkSync(to);
-        fs.renameSync(from, to);
-      }
-    },
-  };
-}
-
 const sharedBuild = {
   target: 'es2020' as const,
   minify: 'esbuild' as const,
@@ -99,7 +82,7 @@ const sharedBuild = {
   chunkSizeWarningLimit: 1500,
 };
 
-/** 仅 `vite build --mode remote`：产物在 remotedist，依赖走 esm.sh CDN */
+/** 仅 `vite build --mode remote`：产物在 server/remote-dist，依赖走 esm.sh CDN */
 const isRemoteBuild = (command: string, mode: string) =>
   command === 'build' && mode === 'remote';
 
@@ -107,7 +90,7 @@ export default defineConfig(({ command, mode }) => {
   const remote = isRemoteBuild(command, mode);
 
   const plugins = [
-    ...(remote ? [remoteExternalPlugin(), renameRemoteHtmlPlugin()] : []),
+    ...(remote ? [remoteExternalPlugin()] : []),
     react(),
     anthropicProxyPlugin(),
   ];
@@ -130,11 +113,11 @@ export default defineConfig(({ command, mode }) => {
     },
     build: remote
       ? {
-          outDir: 'remotedist',
+          outDir: 'server/remote-dist',
           emptyOutDir: true,
           ...sharedBuild,
           rollupOptions: {
-            input: path.resolve(__dirname, 'index.remote.html'),
+            input: path.resolve(__dirname, 'index.html'),
             output: {
               paths: (id) => cdnPath(id) ?? id,
               manualChunks(id) {
