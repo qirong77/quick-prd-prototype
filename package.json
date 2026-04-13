@@ -13,7 +13,9 @@
     "tunnel": "npx cloudflared tunnel --url http://localhost:4173"
   },
   "dependencies": {
+    "@ai-sdk/react": "^3.0.160",
     "@ant-design/icons": "^4.8.3",
+    "ai": "^6.0.158",
     "antd": "^4.24.16",
     "moment": "^2.30.1",
     "react": "^18.2.0",

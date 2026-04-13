@@ -2,6 +2,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { defineConfig, type Plugin } from 'vite';
+import { aiChatProxyPlugin } from './vite/ai-chat-proxy-plugin';
 import { anthropicProxyPlugin } from './vite/anthropic-proxy-plugin';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -108,6 +109,7 @@ export default defineConfig(({ command, mode }) => {
     ...(remote ? [remoteExternalPlugin(), remoteAntdCssInjectPlugin(V.antd)] : []),
     react(),
     anthropicProxyPlugin(),
+    aiChatProxyPlugin(),
   ];
 
   const alias: Record<string, string> = {
