@@ -79,6 +79,8 @@ function attachAnthropicProxy(server: ViteDevServer | PreviewServer) {
         stream: true,
         system: systemFromBody,
         messages: [{ role: 'user', content: userContent }],
+        // 显式关闭 extended thinking，避免部分模型/兼容网关默认开启思考流
+        thinking: { type: 'disabled' },
       }),
     });
 
