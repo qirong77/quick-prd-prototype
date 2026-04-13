@@ -10,6 +10,7 @@
     "preview": "vite preview --host",
     "build:remote": "vite build --mode remote",
     "preview:remote": "vite preview --host --mode remote --outDir server/remote-dist",
+    "serve:remote": "bun run server/remote-server/index.ts",
     "tunnel": "npx cloudflared tunnel --url http://localhost:4173"
   },
   "dependencies": {

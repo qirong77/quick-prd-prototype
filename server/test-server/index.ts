@@ -1,7 +1,6 @@
-// bun server/test-server/index.ts
+// bun run server/test-server/index.ts
 // @ts-ignore
 import { serve } from "bun";
-
 serve({
   port: 4096,
   hostname: "0.0.0.0",
@@ -13,3 +12,4 @@ serve({
     });
   },
 });
+console.log("Server is running on http://0.0.0.0:4096");
