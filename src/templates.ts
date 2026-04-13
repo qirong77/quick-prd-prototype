@@ -4,8 +4,11 @@
 export type { TemplateDef } from './template';
 export {
   TEMPLATES,
-  getDefaultPrdText,
+  getDefaultInstructions,
   getDefaultTemplateKey,
   getTemplate,
   getTemplateByKey,
 } from './template';
+
+/** @deprecated 使用 getDefaultInstructions */
+export { getDefaultInstructions as getDefaultPrdText } from './template';

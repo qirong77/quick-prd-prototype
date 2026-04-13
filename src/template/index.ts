@@ -3,11 +3,10 @@ import { DEFAULT_TEMPLATE } from './default';
 export type TemplateDef = {
   key: string;
   label: string;
-  taskGuide: string;
-  prdPlaceholder: string;
+  /** 左侧「系统提示词」；留空则使用应用内置默认 */
   systemPrompt: string;
+  /** 左侧「需求描述」初始正文 */
   instructions: string;
-  code: string;
 };
 
 export const TEMPLATES: TemplateDef[] = [DEFAULT_TEMPLATE as TemplateDef];
@@ -25,12 +24,7 @@ export function getTemplate(key?: string): TemplateDef {
   return getTemplateByKey(k) ?? TEMPLATES[0];
 }
 
-/** 从 taskGuide 中取出「# 一、…」起的范例正文，作为需求框初始值 */
-export function getDefaultPrdText(templateKey?: string): string {
-  const t = getTemplate(templateKey);
-  const g = t.taskGuide;
-  const marker = '\n# 一、';
-  const i = g.indexOf(marker);
-  if (i >= 0) return g.slice(i + 1).trim();
-  return g.trim();
+/** 模板中的需求描述初始值 */
+export function getDefaultInstructions(templateKey?: string): string {
+  return getTemplate(templateKey).instructions;
 }

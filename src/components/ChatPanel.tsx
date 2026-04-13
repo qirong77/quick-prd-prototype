@@ -1,6 +1,6 @@
 import { Button, Card, Collapse, Select, Typography } from 'antd';
 import React from 'react';
-import { getTemplate, TEMPLATES } from '../template';
+import { TEMPLATES } from '../template';
 import { PrdMarkdownTextarea } from './PrdMarkdownTextarea';
 
 const { Text } = Typography;
@@ -35,8 +35,6 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     modelId,
     onModelId,
 }) => {
-    const currentTemplate = getTemplate(templateKey);
-
     return (
         <Card
             className="app-panel-column app-surface-card"
@@ -111,7 +109,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                             <div className="chat-panel-collapse-header-inner">
                                 <Text strong>需求描述</Text>
                                 <Text type="secondary" className="chat-panel-collapse-header-desc">
-                                    下方为从模板解析的结构范例，可直接在框内修改。
+                                    与当前模板的 instructions 一致，可直接在框内修改。
                                 </Text>
                             </div>
                         }
@@ -121,7 +119,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                                 <PrdMarkdownTextarea
                                     value={prdText}
                                     onChange={onPrdText}
-                                    placeholder={currentTemplate.prdPlaceholder}
+                                    placeholder="需求描述 / PRD"
                                 />
                             </div>
                         </div>

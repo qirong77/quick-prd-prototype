@@ -42,11 +42,8 @@ export function buildAnthropicUserContent(params: BuildUserContentParams): strin
     '---',
     `模板：${t.label}`,
     '---',
-    '【任务说明与结构范例】',
-    t.taskGuide.trim(),
-    '',
     '【产品描述 / PRD】',
-    prd || '（用户未填写：请根据模板自行构思一个合理的示例业务列表页，并写出完整 tsx。）',
+    prd || '（用户未填写：请根据业务自行构思合理的列表页需求，并写出完整 tsx。）',
   ];
   const baseline = String(getDefaultTemplateCode(t.key) ?? '').trim();
   if (baseline) {

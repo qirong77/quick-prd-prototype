@@ -1,7 +1,7 @@
 import { Layout, message, Typography } from 'antd';
 import zhCN from 'antd/es/locale/zh_CN';
 import { ConfigProvider } from 'antd';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import 'antd/dist/antd.css';
 import { ChatPanel } from './components/ChatPanel';
 import { PreviewPanel } from './components/PreviewPanel';
@@ -9,7 +9,7 @@ import { streamAnthropicAssistantText } from './lib/anthropicStream';
 import { getAnthropicModelIds, getDefaultAnthropicModelId } from './lib/modelList';
 import { getDefaultCodeForTemplateKey } from './template/readDefaultCode';
 import { SYSTEM_PROMPT } from './prompts/system';
-import { getDefaultPrdText, getDefaultTemplateKey } from './template';
+import { getDefaultTemplateKey, getTemplate } from './template';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -19,8 +19,19 @@ const App: React.FC = () => {
   const [modelId, setModelId] = useState(() => getDefaultAnthropicModelId(modelIds));
   const [templateKey, setTemplateKey] = useState(() => getDefaultTemplateKey());
 
-  const [prdText, setPrdText] = useState(() => getDefaultPrdText());
-  const [systemPrompt, setSystemPrompt] = useState(() => SYSTEM_PROMPT);
+  const [prdText, setPrdText] = useState(() => getTemplate().instructions);
+  const [systemPrompt, setSystemPrompt] = useState(() => {
+    const t = getTemplate();
+    const sp = t.systemPrompt.trim();
+    return sp ? t.systemPrompt : SYSTEM_PROMPT;
+  });
+
+  useEffect(() => {
+    const t = getTemplate(templateKey);
+    const sp = t.systemPrompt.trim();
+    setSystemPrompt(sp ? t.systemPrompt : SYSTEM_PROMPT);
+    setPrdText(t.instructions);
+  }, [templateKey]);
   const [streamingText, setStreamingText] = useState('');
   const [loading, setLoading] = useState(false);
   const [previewTabKey, setPreviewTabKey] = useState('preview');
