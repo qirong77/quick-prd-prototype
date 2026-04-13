@@ -50,6 +50,21 @@ function cdnPath(id: string): string | undefined {
   return undefined;
 }
 
+/** remote 构建不打包 antd.css（见 alias），需在 HTML 中注入 CDN 样式 */
+function remoteAntdCssInjectPlugin(version: string): Plugin {
+  const href = `https://cdn.jsdelivr.net/npm/antd@${version}/dist/antd.min.css`;
+  return {
+    name: 'remote-antd-css-inject',
+    transformIndexHtml(html) {
+      if (html.includes(href)) return html;
+      return html.replace(
+        '</head>',
+        `    <link rel="stylesheet" href="${href}" crossorigin="anonymous" referrerpolicy="no-referrer" />\n  </head>`,
+      );
+    },
+  };
+}
+
 /** 将 react / antd / moment / icons 留在 bundle 外，由 CDN 加载 */
 function remoteExternalPlugin(): Plugin {
   const bare = new Set([
@@ -90,7 +105,7 @@ export default defineConfig(({ command, mode }) => {
   const remote = isRemoteBuild(command, mode);
 
   const plugins = [
-    ...(remote ? [remoteExternalPlugin()] : []),
+    ...(remote ? [remoteExternalPlugin(), remoteAntdCssInjectPlugin(V.antd)] : []),
     react(),
     anthropicProxyPlugin(),
   ];

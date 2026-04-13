@@ -61,31 +61,16 @@ const App: React.FC = () => {
   return (
     <ConfigProvider locale={zhCN}>
       <Layout style={{ minHeight: '100%', minWidth: 0, overflow: 'hidden' }}>
-        <Header
-          style={{
-            background: '#001529',
-            display: 'flex',
-            alignItems: 'center',
-            paddingInline: 24,
-            minWidth: 0,
-          }}
-        >
-          <Title
-            level={4}
-            ellipsis
-            style={{ color: '#fff', margin: 0, flex: 1, minWidth: 0 }}
-          >
-            Quick PRD Prototype - 快速生成前端交互示例
-          </Title>
+        <Header className="app-shell-header" style={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0, overflow: 'hidden',display:'flex',alignItems:'center',gap:8 }}>
+            <Title level={1} ellipsis className="app-main-title" style={{ marginBottom: 0 }}>
+              Quick PRD Prototype
+            </Title>
+            <div className="app-main-title-kicker">从 PRD 快速生成可运行的前端交互示例</div>
+          </div>
         </Header>
-        <Content style={{ padding: 16, minWidth: 0, overflow: 'hidden' }}>
-          <div
-            className="app-main-grid"
-            style={{
-              height: 'calc(100vh - 32px - 64px)',
-              minHeight: 520,
-            }}
-          >
+        <Content className="app-shell-content" style={{ minWidth: 0, overflow: 'hidden' }}>
+          <div className="app-main-grid">
             <ChatPanel
               prdText={prdText}
               onPrdText={setPrdText}

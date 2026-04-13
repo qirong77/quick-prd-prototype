@@ -1,7 +1,7 @@
-import { Button, Card, Collapse, Select, Typography } from "antd";
-import React from "react";
-import { getTemplate } from "../templates";
-import { PrdMarkdownTextarea } from "./PrdMarkdownTextarea";
+import { Button, Card, Collapse, Select, Typography } from 'antd';
+import React from 'react';
+import { getTemplate } from '../templates';
+import { PrdMarkdownTextarea } from './PrdMarkdownTextarea';
 
 const { Text } = Typography;
 const { Panel } = Collapse;
@@ -35,26 +35,26 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
     return (
         <Card
-            className="app-panel-column"
-            title="PRD / 对话"
+            className="app-panel-column app-surface-card"
+            title="输入"
             size="small"
-            style={{ height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }}
+            style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}
             bodyStyle={{
                 flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                overflow: "hidden",
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
                 minHeight: 0,
-                padding: 12,
+                padding: 14,
             }}
         >
             <div
                 style={{
                     flex: 1,
                     minHeight: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 12,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 14,
                 }}
             >
                 <Collapse
@@ -108,7 +108,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                         </div>
                     </Panel>
                 </Collapse>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div className="chat-panel-actions" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                     <Button type="primary" onClick={onGenerate} loading={loading}>
                         生成
                     </Button>
@@ -116,7 +116,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                         停止
                     </Button>
                     <Select
-                        style={{ marginLeft: "auto",width:220 }}
+                        style={{ marginLeft: 'auto', minWidth: 200, maxWidth: 280, flex: '1 1 200px' }}
                         value={modelId}
                         onChange={onModelId}
                         disabled={loading}

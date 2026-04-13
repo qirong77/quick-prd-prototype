@@ -25,19 +25,7 @@ const RunnerPreview: React.FC<RunnerPreviewProps> = ({ code, scope }) => {
     <>
       {shouldRun ? (
         <PreviewErrorBoundary>
-          <div
-            style={{
-              padding: 16,
-              background: '#fafafa',
-              border: '1px solid #f0f0f0',
-              borderRadius: 4,
-              minWidth: 0,
-              maxWidth: '100%',
-              boxSizing: 'border-box',
-            }}
-          >
-            {element}
-          </div>
+          <div className="preview-canvas">{element}</div>
         </PreviewErrorBoundary>
       ) : null}
       {shouldRun && error ? (
@@ -98,11 +86,18 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
   return (
     <Card
-      className="app-panel-column"
-      title="生成结果"
+      className="app-panel-column app-surface-card"
+      title="预览"
       size="small"
       style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}
-      bodyStyle={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}
+      bodyStyle={{
+        flex: 1,
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0,
+        padding: '12px 14px 14px',
+      }}
     >
       <Tabs
         className="preview-panel-tabs"
@@ -132,7 +127,10 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
         <Tabs.TabPane tab="日志" key="log">
           <div className="preview-log-tab">
             <Space direction="vertical" size="small" style={{ width: '100%', flexShrink: 0 }}>
-              <Paragraph copyable={{ text: streamingText }} style={{ marginBottom: 0 }}>
+              <Paragraph
+                copyable={{ text: streamingText }}
+                style={{ marginBottom: 0, color: 'var(--app-text-muted)', fontSize: 13 }}
+              >
                 {loading
                   ? streamingText.trim()
                     ? '流式接收中，下方为当前已累积的完整原文。'
