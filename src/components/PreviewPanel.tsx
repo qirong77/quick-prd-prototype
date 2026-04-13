@@ -1,4 +1,5 @@
-import { Alert,  Card, Space, Spin, Tabs, Typography } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
+import { Alert, Card, Space, Spin, Tabs, Typography } from 'antd';
 import React, { useMemo } from 'react';
 import { useRunner } from 'react-runner';
 import { tryExtractModelTsx } from '../lib/extractTsxBlock';
@@ -124,7 +125,15 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
             </Spin>
           </div>
         </Tabs.TabPane>
-        <Tabs.TabPane tab="日志" key="log">
+        <Tabs.TabPane
+          tab={
+            <span className="preview-panel-log-tab-label">
+              {loading ? <LoadingOutlined className="preview-panel-log-tab-spinner" spin /> : null}
+              日志
+            </span>
+          }
+          key="log"
+        >
           <div className="preview-log-tab">
             <Space direction="vertical" size="small" style={{ width: '100%', flexShrink: 0 }}>
               <Paragraph

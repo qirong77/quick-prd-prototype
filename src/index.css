@@ -516,3 +516,14 @@ body {
 .preview-panel-tabs .ant-tabs-ink-bar {
   background: var(--app-accent) !important;
 }
+
+.preview-panel-log-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.preview-panel-log-tab-spinner {
+  font-size: 14px;
+  color: var(--app-accent);
+}
