@@ -64,12 +64,16 @@ export type PreviewPanelProps = {
   loading: boolean;
   /** 无完整生成代码时用于预览/代码 Tab 的模板默认 tsx */
   fallbackCode?: string;
+  activeTabKey?: string;
+  onTabChange?: (key: string) => void;
 };
 
 export const PreviewPanel: React.FC<PreviewPanelProps> = ({
   streamingText,
   loading,
   fallbackCode = '',
+  activeTabKey,
+  onTabChange,
 }) => {
   const scope = useMemo(() => buildRunnerScope(), []);
 
@@ -112,7 +116,12 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
       style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}
       bodyStyle={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}
     >
-      <Tabs className="preview-panel-tabs" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      <Tabs
+        className="preview-panel-tabs"
+        style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}
+        activeKey={activeTabKey}
+        onChange={onTabChange}
+      >
         <TabPane tab="预览" key="preview">
           <div className="preview-tab-preview-root">
             <Spin

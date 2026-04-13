@@ -1,11 +1,12 @@
 import { Layout, message, Typography } from 'antd';
 import zhCN from 'antd/es/locale/zh_CN';
 import { ConfigProvider } from 'antd';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import 'antd/dist/antd.css';
 import { ChatPanel } from './components/ChatPanel';
 import { PreviewPanel } from './components/PreviewPanel';
 import { streamAnthropicAssistantText } from './lib/anthropicStream';
+import { getAnthropicModelIds, getDefaultAnthropicModelId } from './lib/modelList';
 import { getDefaultCodeForTemplate } from './template/defaultCodeRaw';
 import { getTemplate } from './templates';
 
@@ -13,9 +14,13 @@ const { Header, Content } = Layout;
 const { Title } = Typography;
 
 const App: React.FC = () => {
+  const modelIds = useMemo(() => getAnthropicModelIds(), []);
+  const [modelId, setModelId] = useState(() => getDefaultAnthropicModelId(modelIds));
+
   const [prdText, setPrdText] = useState(() => getTemplate().prdOutlineExample);
   const [streamingText, setStreamingText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [previewTabKey, setPreviewTabKey] = useState('preview');
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -23,15 +28,17 @@ const App: React.FC = () => {
     abortRef.current?.abort();
     const ac = new AbortController();
     abortRef.current = ac;
+    setPreviewTabKey('code');
     setLoading(true);
     setStreamingText('');
     try {
       const full = await streamAnthropicAssistantText(
-        { prdText },
+        { prdText, model: modelId },
         (acc) => setStreamingText(acc),
         ac.signal,
       );
       setStreamingText(full);
+      setPreviewTabKey('preview');
       message.success('生成完成');
     } catch (e) {
       if ((e as Error).name === 'AbortError') {
@@ -43,7 +50,7 @@ const App: React.FC = () => {
       setLoading(false);
       abortRef.current = null;
     }
-  }, [prdText]);
+  }, [prdText, modelId]);
 
   const onStop = useCallback(() => {
     abortRef.current?.abort();
@@ -83,11 +90,16 @@ const App: React.FC = () => {
               loading={loading}
               onGenerate={onGenerate}
               onStop={onStop}
+              modelIds={modelIds}
+              modelId={modelId}
+              onModelId={setModelId}
             />
             <PreviewPanel
               streamingText={streamingText}
               loading={loading}
               fallbackCode={getDefaultCodeForTemplate()}
+              activeTabKey={previewTabKey}
+              onTabChange={setPreviewTabKey}
             />
           </div>
         </Content>
