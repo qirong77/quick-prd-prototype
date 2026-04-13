@@ -7,9 +7,9 @@ import { ChatPanel } from './components/ChatPanel';
 import { PreviewPanel } from './components/PreviewPanel';
 import { streamAnthropicAssistantText } from './lib/anthropicStream';
 import { getAnthropicModelIds, getDefaultAnthropicModelId } from './lib/modelList';
-import { getDefaultCodeForTemplate } from './template/defaultCodeRaw';
+import { getDefaultCodeForTemplateKey } from './template/readDefaultCode';
 import { SYSTEM_PROMPT } from './prompts/system';
-import { getDefaultPrdText } from './templates';
+import { getDefaultPrdText, getDefaultTemplateKey } from './template';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -17,6 +17,7 @@ const { Title } = Typography;
 const App: React.FC = () => {
   const modelIds = useMemo(() => getAnthropicModelIds(), []);
   const [modelId, setModelId] = useState(() => getDefaultAnthropicModelId(modelIds));
+  const [templateKey, setTemplateKey] = useState(() => getDefaultTemplateKey());
 
   const [prdText, setPrdText] = useState(() => getDefaultPrdText());
   const [systemPrompt, setSystemPrompt] = useState(() => SYSTEM_PROMPT);
@@ -35,7 +36,7 @@ const App: React.FC = () => {
     setStreamingText('');
     try {
       const full = await streamAnthropicAssistantText(
-        { prdText, systemPrompt, model: modelId },
+        { prdText, systemPrompt, model: modelId, templateKey },
         (acc) => setStreamingText(acc),
         ac.signal,
       );
@@ -52,7 +53,7 @@ const App: React.FC = () => {
       setLoading(false);
       abortRef.current = null;
     }
-  }, [prdText, systemPrompt, modelId]);
+  }, [prdText, systemPrompt, modelId, templateKey]);
 
   const onStop = useCallback(() => {
     abortRef.current?.abort();
@@ -80,6 +81,8 @@ const App: React.FC = () => {
                 loading={loading}
                 onGenerate={onGenerate}
                 onStop={onStop}
+                templateKey={templateKey}
+                onTemplateKey={setTemplateKey}
                 modelIds={modelIds}
                 modelId={modelId}
                 onModelId={setModelId}
@@ -88,7 +91,7 @@ const App: React.FC = () => {
             <PreviewPanel
               streamingText={streamingText}
               loading={loading}
-              fallbackCode={getDefaultCodeForTemplate()}
+              fallbackCode={getDefaultCodeForTemplateKey(templateKey)}
               activeTabKey={previewTabKey}
               onTabChange={setPreviewTabKey}
             />

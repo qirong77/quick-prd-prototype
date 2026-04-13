@@ -61,7 +61,12 @@ function attachAnthropicProxy(server: ViteDevServer | PreviewServer) {
     const maxTokens =
       typeof body.max_tokens === 'number' && body.max_tokens > 0 ? body.max_tokens : 8192;
 
-    const userContent = buildAnthropicUserContent({ prdText });
+    const templateKey =
+      typeof body.templateKey === 'string' && body.templateKey.length > 0
+        ? body.templateKey
+        : undefined;
+
+    const userContent = buildAnthropicUserContent({ prdText, templateKey });
 
     const baseUrl = (env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com').replace(/\/$/, '');
     const url = `${baseUrl}/v1/messages`;

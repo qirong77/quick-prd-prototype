@@ -4,6 +4,8 @@ export type StreamRequestBody = {
   systemPrompt?: string;
   model?: string;
   max_tokens?: number;
+  /** 与 `src/template` 中模板 key 一致 */
+  templateKey?: string;
 };
 
 /**

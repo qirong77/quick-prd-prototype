@@ -1,6 +1,6 @@
 import { Button, Card, Collapse, Select, Typography } from 'antd';
 import React from 'react';
-import { getTemplate } from '../templates';
+import { getTemplate, TEMPLATES } from '../template';
 import { PrdMarkdownTextarea } from './PrdMarkdownTextarea';
 
 const { Text } = Typography;
@@ -14,6 +14,8 @@ export type ChatPanelProps = {
     loading: boolean;
     onGenerate: () => void;
     onStop: () => void;
+    templateKey: string;
+    onTemplateKey: (v: string) => void;
     modelIds: string[];
     modelId: string;
     onModelId: (v: string) => void;
@@ -27,11 +29,13 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     loading,
     onGenerate,
     onStop,
+    templateKey,
+    onTemplateKey,
     modelIds,
     modelId,
     onModelId,
 }) => {
-    const currentTemplate = getTemplate();
+    const currentTemplate = getTemplate(templateKey);
 
     return (
         <Card
@@ -57,6 +61,21 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                     gap: 14,
                 }}
             >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                        模板
+                    </Text>
+                    <Select
+                        style={{ width: '100%' }}
+                        value={templateKey}
+                        onChange={onTemplateKey}
+                        disabled={loading}
+                        options={TEMPLATES.map((t) => ({ label: t.label, value: t.key }))}
+                        placeholder="选择模板"
+                        showSearch
+                        optionFilterProp="label"
+                    />
+                </div>
                 <Collapse
                     defaultActiveKey={["system", "prd"]}
                     className="chat-panel-collapse"

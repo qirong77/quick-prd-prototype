@@ -1,5 +1,5 @@
-import { getTemplate } from "../templates";
-import { getDefaultTemplateCode } from "../template/readDefaultCode";
+import { getDefaultTemplateKey, getTemplate } from '../template';
+import { getDefaultTemplateCode } from '../template/readDefaultCode';
 
 /**
  * 系统提示：稳定规则与输出契约，与 validateGeneratedTsx 的允许 import / 禁止 API 对齐。
@@ -32,10 +32,11 @@ export const SYSTEM_PROMPT = `
 
 export type BuildUserContentParams = {
   prdText: string;
+  templateKey?: string;
 };
 
 export function buildAnthropicUserContent(params: BuildUserContentParams): string {
-  const t = getTemplate();
+  const t = getTemplate(params.templateKey ?? getDefaultTemplateKey());
   const prd = params.prdText.trim();
   const parts: string[] = [
     '---',
@@ -47,12 +48,12 @@ export function buildAnthropicUserContent(params: BuildUserContentParams): strin
     '【产品描述 / PRD】',
     prd || '（用户未填写：请根据模板自行构思一个合理的示例业务列表页，并写出完整 tsx。）',
   ];
-  const baseline = String(getDefaultTemplateCode() ?? '').trim();
+  const baseline = String(getDefaultTemplateCode(t.key) ?? '').trim();
   if (baseline) {
     parts.push(
       '',
       '【默认骨架代码】',
-      '以下为 `src/template/list_standard.tsx` 当前内容。请在其基础上按 PRD 修改：增删搜索项、操作按钮、表格列与抽屉/弹窗字段；保持默认导出组件与整体页面结构。',
+      '以下为当前模板对应骨架源码。请在其基础上按 PRD 修改：增删搜索项、操作按钮、表格列与抽屉/弹窗字段；保持默认导出组件与整体页面结构。',
       '```tsx',
       baseline,
       '```',
