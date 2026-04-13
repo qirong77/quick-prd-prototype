@@ -60,9 +60,9 @@ const App: React.FC = () => {
 
   return (
     <ConfigProvider locale={zhCN}>
-      <Layout style={{ minHeight: '100%', minWidth: 0, overflow: 'hidden' }}>
-        <Header className="app-shell-header" style={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
-          <div style={{ flex: 1, minWidth: 0, overflow: 'hidden',display:'flex',alignItems:'center',gap:8 }}>
+      <Layout className="app-root-layout" style={{ minHeight: '100%', minWidth: 0, overflow: 'hidden' }}>
+        <Header className="app-shell app-shell-header" style={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', gap: 8 }}>
             <Title level={1} ellipsis className="app-main-title" style={{ marginBottom: 0 }}>
               Quick PRD Prototype
             </Title>
@@ -71,18 +71,20 @@ const App: React.FC = () => {
         </Header>
         <Content className="app-shell-content" style={{ minWidth: 0, overflow: 'hidden' }}>
           <div className="app-main-grid">
-            <ChatPanel
-              prdText={prdText}
-              onPrdText={setPrdText}
-              systemPrompt={systemPrompt}
-              onSystemPrompt={setSystemPrompt}
-              loading={loading}
-              onGenerate={onGenerate}
-              onStop={onStop}
-              modelIds={modelIds}
-              modelId={modelId}
-              onModelId={setModelId}
-            />
+            <div className="app-shell app-shell-chat">
+              <ChatPanel
+                prdText={prdText}
+                onPrdText={setPrdText}
+                systemPrompt={systemPrompt}
+                onSystemPrompt={setSystemPrompt}
+                loading={loading}
+                onGenerate={onGenerate}
+                onStop={onStop}
+                modelIds={modelIds}
+                modelId={modelId}
+                onModelId={setModelId}
+              />
+            </div>
             <PreviewPanel
               streamingText={streamingText}
               loading={loading}

@@ -86,7 +86,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
   return (
     <Card
-      className="app-panel-column app-surface-card"
+      className="app-panel-column preview-panel-chrome"
       title="预览"
       size="small"
       style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}
