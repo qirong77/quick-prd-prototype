@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Space, Spin, Tabs, Typography } from 'antd';
+import { Alert,  Card, Space, Spin, Tabs, Typography } from 'antd';
 import React, { useMemo } from 'react';
 import { useRunner } from 'react-runner';
 import { tryExtractModelTsx } from '../lib/extractTsxBlock';
@@ -7,7 +7,6 @@ import { validateGeneratedTsx } from '../lib/validateGeneratedTsx';
 import { PreviewErrorBoundary } from './PreviewErrorBoundary';
 
 const { Paragraph } = Typography;
-const { TabItem } = Tabs;
 
 type RunnerPreviewProps = {
   code: string;
@@ -96,16 +95,6 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
   const runnerCode = validationError ? '' : effectiveCode ?? '';
   const shouldRun = Boolean(runnerCode.trim());
 
-  const handleDownloadLog = () => {
-    if (!streamingText.trim()) return;
-    const blob = new Blob([streamingText], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'model-response.txt';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   return (
     <Card
@@ -121,7 +110,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
         activeKey={activeTabKey}
         onChange={onTabChange}
       >
-        <TabItem tab="预览" key="preview">
+        <Tabs.TabPane tab="预览" key="preview">
           <div className="preview-tab-preview-root">
             <Spin
               spinning={loading}
@@ -139,15 +128,10 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
               </div>
             </Spin>
           </div>
-        </TabItem>
-        <TabItem tab="日志" key="log">
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="日志" key="log">
           <div className="preview-log-tab">
             <Space direction="vertical" size="small" style={{ width: '100%', flexShrink: 0 }}>
-              <Space wrap>
-                <Button type="link" onClick={handleDownloadLog} disabled={!streamingText.trim()}>
-                  下载完整响应
-                </Button>
-              </Space>
               <Paragraph copyable={{ text: streamingText }} style={{ marginBottom: 0 }}>
                 {loading
                   ? streamingText.trim()
@@ -160,7 +144,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
             </Space>
             <pre className="preview-log-body">{streamingText}</pre>
           </div>
-        </TabItem>
+        </Tabs.TabPane>
       </Tabs>
     </Card>
   );
