@@ -28,7 +28,7 @@ const App: React.FC = () => {
     abortRef.current?.abort();
     const ac = new AbortController();
     abortRef.current = ac;
-    setPreviewTabKey('code');
+    setPreviewTabKey('log');
     setLoading(true);
     setStreamingText('');
     try {

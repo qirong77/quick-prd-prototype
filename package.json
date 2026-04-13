@@ -8,17 +8,14 @@
     "build": "vite build",
     "preprepare": "npm run build",
     "preview": "vite preview --host",
-    "buildremote": "vite build ",
-    "previewremote": "vite preview ",
+    "build:remote": "vite build --config vite.config.remote.ts",
+    "preview:remote": "vite preview --config vite.config.remote.ts --host",
     "tunnel": "npx cloudflared tunnel --url http://localhost:4173"
   },
   "dependencies": {
-    "@ant-design/icons": "^5.3.1",
-    "@milkdown/crepe": "^7.20.0",
-    "@monaco-editor/react": "^4.7.0",
+    "@ant-design/icons": "^4.8.3",
     "antd": "^4.24.16",
     "moment": "^2.30.1",
-    "monaco-editor": "^0.55.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-runner": "^1.0.5"

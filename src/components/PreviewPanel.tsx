@@ -1,5 +1,4 @@
 import { Alert, Button, Card, Space, Spin, Tabs, Typography } from 'antd';
-import Editor from '@monaco-editor/react';
 import React, { useMemo } from 'react';
 import { useRunner } from 'react-runner';
 import { tryExtractModelTsx } from '../lib/extractTsxBlock';
@@ -62,7 +61,7 @@ const RunnerPreview: React.FC<RunnerPreviewProps> = ({ code, scope }) => {
 export type PreviewPanelProps = {
   streamingText: string;
   loading: boolean;
-  /** 无完整生成代码时用于预览/代码 Tab 的模板默认 tsx */
+  /** 无完整生成代码时用于预览的模板默认 tsx */
   fallbackCode?: string;
   activeTabKey?: string;
   onTabChange?: (key: string) => void;
@@ -89,14 +88,6 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
     return fb.length > 0 ? fb : null;
   }, [extracted, loading, streamingText, fallbackCode]);
 
-  /** 生成结束后代码区展示：优先已提取 tsx，否则完整模型原文，再否则模板 */
-  const finalEditorCode = useMemo(() => {
-    if (extracted) return extracted;
-    const raw = streamingText.trim();
-    if (raw.length > 0) return streamingText;
-    return fallbackCode.trim();
-  }, [extracted, streamingText, fallbackCode]);
-
   const validationError = useMemo(
     () => (effectiveCode ? validateGeneratedTsx(effectiveCode) : null),
     [effectiveCode],
@@ -105,13 +96,13 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
   const runnerCode = validationError ? '' : effectiveCode ?? '';
   const shouldRun = Boolean(runnerCode.trim());
 
-  const handleDownload = () => {
-    if (!finalEditorCode.trim()) return;
-    const blob = new Blob([finalEditorCode], { type: 'text/plain;charset=utf-8' });
+  const handleDownloadLog = () => {
+    if (!streamingText.trim()) return;
+    const blob = new Blob([streamingText], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'Prototype.tsx';
+    a.download = 'model-response.txt';
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -149,48 +140,25 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
             </Spin>
           </div>
         </TabPane>
-        <TabPane tab="代码" key="code">
-          <div className="preview-code-tab">
+        <TabPane tab="日志" key="log">
+          <div className="preview-log-tab">
             <Space direction="vertical" size="small" style={{ width: '100%', flexShrink: 0 }}>
-              <Button type="link" onClick={handleDownload} disabled={loading || !finalEditorCode.trim()}>
-                下载 Prototype.tsx
-              </Button>
-              <Paragraph
-                copyable={{ text: loading ? streamingText : finalEditorCode }}
-                style={{ marginBottom: 0 }}
-              >
+              <Space wrap>
+                <Button type="link" onClick={handleDownloadLog} disabled={!streamingText.trim()}>
+                  下载完整响应
+                </Button>
+              </Space>
+              <Paragraph copyable={{ text: streamingText }} style={{ marginBottom: 0 }}>
                 {loading
                   ? streamingText.trim()
-                    ? '正在接收流式输出（下方为实时原文）。'
+                    ? '流式接收中，下方为当前已累积的完整原文。'
                     : '等待模型输出…'
-                  : extracted
-                    ? '已提取模型输出的 tsx，可复制或下载。'
-                    : finalEditorCode.trim()
-                      ? '以下为完整模型输出；若含 ```tsx 代码块将用于预览。'
-                      : '尚未获得可展示的 tsx。'}
+                  : streamingText.trim()
+                    ? '以下为本次请求返回的完整原文（含思考过程）；预览中的 tsx 仍从 ```tsx 提取。'
+                    : '尚无模型返回内容。'}
               </Paragraph>
             </Space>
-            <div className="preview-monaco-wrap">
-              {loading ? (
-                <pre className="preview-streaming-code">{streamingText}</pre>
-              ) : (
-                <Editor
-                  key="monaco-after-stream"
-                  height="100%"
-                  language="typescript"
-                  theme="vs-dark"
-                  value={finalEditorCode}
-                  options={{
-                    readOnly: true,
-                    minimap: { enabled: false },
-                    fontSize: 13,
-                    wordWrap: 'on',
-                    scrollBeyondLastLine: false,
-                    automaticLayout: true,
-                  }}
-                />
-              )}
-            </div>
+            <pre className="preview-log-body">{streamingText}</pre>
           </div>
         </TabPane>
       </Tabs>

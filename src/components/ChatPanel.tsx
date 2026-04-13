@@ -1,7 +1,7 @@
-import { Button, Card, Select, Space, Typography } from "antd";
+import { Button, Card, Select, Typography } from "antd";
 import React from "react";
 import { getTemplate } from "../templates";
-import { PrdMilkdownEditor } from "./PrdMilkdownEditor";
+import { PrdMarkdownTextarea } from "./PrdMarkdownTextarea";
 
 const { Text, Paragraph } = Typography;
 
@@ -62,8 +62,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ prdText, onPrdText, loadin
                     <Paragraph type="secondary" style={{ marginTop: 6, marginBottom: 0, fontSize: 12, flexShrink: 0 }}>
                         下方为结构范例，可直接在框内修改。
                     </Paragraph>
-                    <div className="chat-panel-milkdown-wrap">
-                        <PrdMilkdownEditor value={prdText} onChange={onPrdText} placeholder={currentTemplate.prdPlaceholder} />
+                    <div className="chat-panel-prd-editor-wrap">
+                        <PrdMarkdownTextarea
+                            value={prdText}
+                            onChange={onPrdText}
+                            placeholder={currentTemplate.prdPlaceholder}
+                        />
                     </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -74,7 +78,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ prdText, onPrdText, loadin
                         停止
                     </Button>
                     <Select
-                        style={{ marginLeft: "auto" }}
+                        style={{ marginLeft: "auto",width:220 }}
                         value={modelId}
                         onChange={onModelId}
                         disabled={loading}

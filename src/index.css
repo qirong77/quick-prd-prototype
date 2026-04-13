@@ -46,7 +46,8 @@ body {
   line-height: 1.5;
 }
 
-.chat-panel-milkdown-wrap {
+/* PRD：轻量 Markdown 原文编辑区（antd TextArea） */
+.chat-panel-prd-editor-wrap {
   flex: 1 1 0;
   min-height: 0;
   margin-top: 8px;
@@ -58,126 +59,31 @@ body {
   background: #fff;
 }
 
-.prd-milkdown-root {
+.chat-panel-prd-editor-wrap > .ant-input-textarea {
   flex: 1 1 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
-.prd-milkdown-inner {
+.chat-panel-prd-editor-wrap textarea.ant-input {
   flex: 1 1 0;
-  min-height: 0;
-  overflow: auto;
-}
-
-.prd-milkdown-inner .milkdown {
-  min-height: 100%;
-}
-
-/* ---------- PRD Milkdown：紧凑 MIS 风格，覆盖 Crepe 默认「文档页」大字号与大留白 ---------- */
-.chat-panel-milkdown-wrap .milkdown {
-  --crepe-font-title: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, 'Noto Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --crepe-font-default: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, 'Noto Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --crepe-color-outline: rgba(0, 0, 0, 0.45);
-  --crepe-color-on-surface-variant: rgba(0, 0, 0, 0.65);
-}
-
-.chat-panel-milkdown-wrap .milkdown .ProseMirror {
-  padding: 10px 12px 14px;
-  font-size: 14px;
-  line-height: 1.6;
-  color: rgba(0, 0, 0, 0.88);
-}
-
-.chat-panel-milkdown-wrap .milkdown .ProseMirror h1,
-.chat-panel-milkdown-wrap .milkdown .ProseMirror h2,
-.chat-panel-milkdown-wrap .milkdown .ProseMirror h3,
-.chat-panel-milkdown-wrap .milkdown .ProseMirror h4,
-.chat-panel-milkdown-wrap .milkdown .ProseMirror h5,
-.chat-panel-milkdown-wrap .milkdown .ProseMirror h6 {
-  font-family: var(--crepe-font-title);
-  font-weight: 600;
-  letter-spacing: 0;
-  color: rgba(0, 0, 0, 0.88);
-}
-
-.chat-panel-milkdown-wrap .milkdown .ProseMirror h1 {
-  font-size: 15px;
-  line-height: 1.45;
-  margin-top: 12px;
-  margin-bottom: 4px;
-}
-
-.chat-panel-milkdown-wrap .milkdown .ProseMirror h2 {
-  font-size: 15px;
-  line-height: 1.45;
-  margin-top: 10px;
-  margin-bottom: 4px;
-}
-
-.chat-panel-milkdown-wrap .milkdown .ProseMirror h3 {
-  font-size: 14px;
-  line-height: 1.45;
-  margin-top: 10px;
-  margin-bottom: 4px;
-}
-
-.chat-panel-milkdown-wrap .milkdown .ProseMirror h4,
-.chat-panel-milkdown-wrap .milkdown .ProseMirror h5,
-.chat-panel-milkdown-wrap .milkdown .ProseMirror h6 {
-  font-size: 14px;
-  line-height: 1.45;
-  margin-top: 8px;
-  margin-bottom: 4px;
-}
-
-.chat-panel-milkdown-wrap .milkdown .ProseMirror > *:first-child {
-  margin-top: 0 !important;
-}
-
-.chat-panel-milkdown-wrap .milkdown .ProseMirror p {
-  font-size: 14px;
-  line-height: 1.6;
-  padding: 2px 0;
-  min-height: 0;
-  color: rgba(0, 0, 0, 0.88);
-}
-
-.chat-panel-milkdown-wrap .milkdown .ProseMirror ul,
-.chat-panel-milkdown-wrap .milkdown .ProseMirror ol {
-  margin: 4px 0 6px;
-  padding-left: 1.4em;
-}
-
-.chat-panel-milkdown-wrap .milkdown .ProseMirror li {
-  margin: 2px 0;
-}
-
-.chat-panel-milkdown-wrap .milkdown .ProseMirror blockquote {
-  margin: 6px 0;
-  padding: 4px 0 4px 12px;
-  border-left: 3px solid #d9d9d9;
+  min-height: 120px;
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
   border-radius: 0;
-  border-top: none;
-  border-right: none;
-  border-bottom: none;
-  background: transparent;
+  resize: none !important;
+  box-shadow: none !important;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  padding: 10px 12px 12px;
+  color: rgba(0, 0, 0, 0.88);
 }
 
-.chat-panel-milkdown-wrap .milkdown .ProseMirror blockquote::before {
-  display: none;
-}
-
-.chat-panel-milkdown-wrap .milkdown .milkdown-list-item-block li .label-wrapper {
-  color: rgba(0, 0, 0, 0.55);
-}
-
-.chat-panel-milkdown-wrap .milkdown .milkdown-list-item-block li .label-wrapper svg {
-  fill: rgba(0, 0, 0, 0.45);
+.chat-panel-prd-editor-wrap textarea.ant-input:focus {
+  box-shadow: none !important;
 }
 
 /* 主布局：避免窄屏下 minmax(360px) 撑出横向滚动 */
@@ -194,7 +100,7 @@ body {
   min-width: 0;
 }
 
-/* 预览区 Tabs 撑满高度，代码 Tab 内 Monaco 可伸展 */
+/* 预览区 Tabs 撑满高度 */
 .preview-panel-tabs.ant-tabs {
   display: flex;
   flex-direction: column;
@@ -259,7 +165,7 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-.preview-code-tab {
+.preview-log-tab {
   flex: 1 1 0;
   min-height: 0;
   display: flex;
@@ -267,25 +173,20 @@ body {
   gap: 8px;
 }
 
-.preview-monaco-wrap {
+.preview-log-body {
   flex: 1 1 0;
-  min-height: 200px;
-  border: 1px solid #30363d;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.preview-streaming-code {
-  height: 100%;
+  min-height: 120px;
   margin: 0;
   padding: 12px;
   overflow: auto;
   box-sizing: border-box;
   white-space: pre-wrap;
   word-break: break-word;
-  font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-family: ui-monospace, Menlo, Monaco, Consolas, 'Courier New', monospace;
   font-size: 13px;
   line-height: 1.5;
   color: #d4d4d4;
   background: #1e1e1e;
+  border: 1px solid #30363d;
+  border-radius: 4px;
 }
