@@ -18,8 +18,6 @@ const models: string[] = [
   "claude-sonnet-4-5-20250929",
   "claude-sonnet-4-6",
 ];
-const systemPrompt = ``;
-const query = `你是什么模型？模型的型号是多少？`;
 
 function buildMessages(
   system: string,
@@ -84,21 +82,9 @@ async function streamChatCompletion(options: {
   return full;
 }
 
-async function main() {
-  const { baseURL, apiKey } = getKeyAndUrl();
-  const text = await streamChatCompletion({
-    baseURL,
-    apiKey,
-    model: models[0],
-    systemPrompt,
-    userQuery: query,
-    onDelta: (piece) => {
-      process.stdout.write(piece);
-    },
-  });
-  console.log("\n--- full ---\n", text);
-}
 
-main().catch((err) => {
-  console.error("error", err);
-});
+export const anthorpic = {
+  streamChatCompletion,
+  getKeyAndUrl,
+  models,
+}
