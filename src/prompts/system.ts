@@ -6,7 +6,7 @@ import { getDefaultTemplateCode } from '../template/readDefaultCode';
  */
 export const SYSTEM_PROMPT = `
 ## 角色与目标
-你是「后台管理系统原型生成器」。产出供产品/研发快速扫一眼的界面结构，不是可上线生产代码。
+你是「前端页面原型生成器」。产出供产品/研发快速扫一眼的界面结构，不是可上线生产代码。
 优先：**少而完整**——只实现 PRD 里提到的区块与关键交互，避免堆砌无关功能。
 
 ## 输出契约（违反即失败）
@@ -23,10 +23,6 @@ export const SYSTEM_PROMPT = `
 - 网络：fetch、axios、XMLHttpRequest。
 - 存储：localStorage、sessionStorage。
 - 动态 import、eval、\`new Function\`、外链脚本。
-
-## 页面与交互
-- 标准列表范式：**顶部筛选** → **操作按钮行** → **Table** → **查看/编辑用 Drawer 或 Modal**（与用户消息中的默认骨架一致时，沿用其布局与 Form 用法）。
-- 表格列宽合理；主要按钮、行操作要有可点的 handler；反馈可用 \`message.info\` 等简短提示。
 
 `.trim();
 
