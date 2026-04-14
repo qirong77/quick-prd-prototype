@@ -1,5 +1,6 @@
 import { buildAnthropicUserContent, SYSTEM_PROMPT } from '@/prompts/system';
-import { getAnthropicApiKey, getAnthropicBaseUrl, getDefaultAnthropicModelId } from '@/server/anthropic/env';
+import { createAnthropicClient } from '@/server/anthropic/client';
+import { getAnthropicApiKey, getDefaultAnthropicModelId } from '@/server/anthropic/env';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
   const apiKey = getAnthropicApiKey();
   if (!apiKey) {
     return NextResponse.json(
-      { error: '缺少 ANTHROPIC_API_KEY，请在 .env 中配置' },
+      { error: '缺少网关 API Key，请在 src/config/server.config.ts 中配置' },
       { status: 500 },
     );
   }
@@ -43,36 +44,45 @@ export async function POST(req: Request) {
 
   const userContent = buildAnthropicUserContent({ prdText, templateKey });
 
-  const baseUrl = getAnthropicBaseUrl();
-  const url = `${baseUrl}/v1/messages`;
+  const anthropic = createAnthropicClient();
 
-  const upstream = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
+  let stream;
+  try {
+    stream = anthropic.messages.stream({
       model,
       max_tokens: maxTokens,
-      stream: true,
       system: systemFromBody,
       messages: [{ role: 'user', content: userContent }],
       thinking: { type: 'disabled' },
-    }),
-  });
-
-  const ct = upstream.headers.get('content-type');
-  if (!upstream.ok || !upstream.body) {
-    const errText = await upstream.text();
-    return new NextResponse(errText || JSON.stringify({ error: upstream.statusText }), {
-      status: upstream.status,
-      headers: ct ? { 'Content-Type': ct } : undefined,
     });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 
-  const headers = new Headers();
-  if (ct) headers.set('Content-Type', ct);
-  return new Response(upstream.body, { status: upstream.status, headers });
+  const encoder = new TextEncoder();
+  const readable = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        stream.on('text', (delta: string) => {
+          controller.enqueue(encoder.encode(delta));
+        });
+        stream.on('error', (err: Error) => {
+          controller.error(err);
+        });
+        await stream.done();
+        controller.close();
+      } catch (e) {
+        controller.error(e instanceof Error ? e : new Error(String(e)));
+      }
+    },
+  });
+
+  return new Response(readable, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'no-store',
+    },
+  });
 }

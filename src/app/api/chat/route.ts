@@ -1,21 +1,22 @@
 import {
   createUIMessageStream,
   createUIMessageStreamResponse,
+  generateId,
   type UIMessage,
 } from 'ai';
-import { getAnthropicApiKey, getAnthropicBaseUrl, getDefaultAnthropicModelId } from '@/server/anthropic/env';
-import {
-  generateId,
-  pipeAnthropicSseToUiWriter,
-  uiMessagesToAnthropicMessages,
-} from '@/server/anthropic/uiStream';
+import { createAnthropicClient } from '@/server/anthropic/client';
+import { getAnthropicApiKey, getDefaultAnthropicModelId } from '@/server/anthropic/env';
+import { uiMessagesToAnthropicMessages } from '@/server/anthropic/uiStream';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   const apiKey = getAnthropicApiKey();
   if (!apiKey) {
-    return Response.json({ error: '缺少 ANTHROPIC_API_KEY，请在 .env 中配置' }, { status: 500 });
+    return Response.json(
+      { error: '缺少网关 API Key，请在 src/config/server.config.ts 中配置' },
+      { status: 500 },
+    );
   }
 
   let body: Record<string, unknown>;
@@ -33,17 +34,10 @@ export async function POST(req: Request) {
   const modelDefault = getDefaultAnthropicModelId();
   const model =
     typeof body.model === 'string' && body.model.length > 0 ? body.model : modelDefault;
-  const system =
-    typeof body.system === 'string' && body.system.trim().length > 0
-      ? body.system.trim()
-      : undefined;
   const maxOutputTokens =
     typeof body.maxOutputTokens === 'number' && body.maxOutputTokens > 0
       ? body.maxOutputTokens
       : 8192;
-
-  const apiRoot = getAnthropicBaseUrl();
-  const url = `${apiRoot}/v1/messages`;
 
   const uiMessages = messagesRaw as UIMessage[];
   const anthropicMessages = uiMessagesToAnthropicMessages(uiMessages);
@@ -51,32 +45,24 @@ export async function POST(req: Request) {
     return Response.json({ error: '没有可发送的对话消息' }, { status: 400 });
   }
 
+  const anthropic = createAnthropicClient();
+
   const stream = createUIMessageStream({
     originalMessages: uiMessages,
     onError: (err) => (err instanceof Error ? err.message : '生成失败'),
     execute: async ({ writer }) => {
-      const upstream = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
+      let ms;
+      try {
+        ms = anthropic.messages.stream({
           model,
           max_tokens: maxOutputTokens,
-          stream: true,
-          ...(system ? { system } : {}),
           messages: anthropicMessages,
           thinking: { type: 'disabled' },
-        }),
-      });
-
-      if (!upstream.ok || !upstream.body) {
-        const t = await upstream.text();
+        });
+      } catch (e) {
         writer.write({
           type: 'error',
-          errorText: t || `请求失败: ${upstream.status}`,
+          errorText: e instanceof Error ? e.message : String(e),
         });
         return;
       }
@@ -85,7 +71,10 @@ export async function POST(req: Request) {
       const textId = generateId();
       writer.write({ type: 'text-start', id: textId });
       try {
-        await pipeAnthropicSseToUiWriter(upstream.body, (p) => writer.write(p), textId);
+        ms.on('text', (delta: string) => {
+          writer.write({ type: 'text-delta', id: textId, delta });
+        });
+        await ms.done();
       } catch (e) {
         writer.write({
           type: 'error',

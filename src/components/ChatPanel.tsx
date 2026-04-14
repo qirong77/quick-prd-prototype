@@ -1,4 +1,4 @@
-import { Button, Card, Collapse, Segmented, Select, Typography } from 'antd';
+import { Button, Card, Collapse, Radio, Select, Typography } from 'antd';
 import React, { useState } from 'react';
 import { TEMPLATES } from '../template';
 import { AiChatPanel } from './AiChatPanel';
@@ -41,7 +41,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     return (
         <Card
             className="app-panel-column app-surface-card"
-            title="输入"
+            title=""
             size="small"
             style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}
             bodyStyle={{
@@ -62,19 +62,23 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                     gap: 14,
                 }}
             >
-                <div style={{ flexShrink: 0 }}>
+                <div style={{ flexShrink: 0, position: 'relative', zIndex: 1 }}>
                     <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
                         模式
                     </Text>
-                    <Segmented
-                        block
+                    <Radio.Group
+                        buttonStyle="solid"
                         value={sidebarMode}
-                        onChange={(v) => setSidebarMode(v as 'generate' | 'chat')}
-                        options={[
-                            { label: '页面生成', value: 'generate' },
-                            { label: '聊天', value: 'chat' },
-                        ]}
-                    />
+                        onChange={(e) => setSidebarMode(e.target.value as 'generate' | 'chat')}
+                        style={{ width: '100%', display: 'flex' }}
+                    >
+                        <Radio.Button value="generate" style={{ flex: 1, textAlign: 'center' }}>
+                            页面生成
+                        </Radio.Button>
+                        <Radio.Button value="chat" style={{ flex: 1, textAlign: 'center' }}>
+                            聊天
+                        </Radio.Button>
+                    </Radio.Group>
                 </div>
 
                 {sidebarMode === 'generate' ? (
@@ -95,7 +99,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                             />
                         </div>
                         <Collapse
-                            defaultActiveKey={['system', 'prd']}
+                            defaultActiveKey={['prd']}
                             className="chat-panel-collapse"
                             expandIconPosition="end"
                         >

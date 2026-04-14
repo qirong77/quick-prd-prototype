@@ -1,10 +1,9 @@
 import { useChat } from '@ai-sdk/react';
-import { Button, Collapse, Empty, Input, Select, Typography, message } from 'antd';
+import { Button, Empty, Input, Select, Typography, message } from 'antd';
 import { DefaultChatTransport, isTextUIPart, type UIMessage } from 'ai';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const { Text } = Typography;
-const { Panel } = Collapse;
 const { TextArea } = Input;
 
 export type AiChatPanelProps = {
@@ -21,9 +20,6 @@ function textFromMessage(m: UIMessage): string {
 }
 
 export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onModelId }) => {
-  const [chatSystemPrompt, setChatSystemPrompt] = useState(
-    '你是乐于助人的助手，回答简洁、可执行；与右侧「页面生成」无关的独立对话。',
-  );
   const [draft, setDraft] = useState('');
   const listRef = useRef<HTMLDivElement | null>(null);
 
@@ -31,19 +27,15 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
     () =>
       new DefaultChatTransport({
         api: '/api/chat',
-        prepareSendMessagesRequest: ({ id, messages }) => {
-          const sys = chatSystemPrompt.trim();
-          return {
-            body: {
-              id,
-              messages,
-              model: modelId,
-              ...(sys ? { system: sys } : {}),
-            },
-          };
-        },
+        prepareSendMessagesRequest: ({ id, messages }) => ({
+          body: {
+            id,
+            messages,
+            model: modelId,
+          },
+        }),
       }),
-    [modelId, chatSystemPrompt],
+    [modelId],
   );
 
   const { messages, sendMessage, status, stop, setMessages, error, clearError } = useChat({
@@ -79,32 +71,6 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
         gap: 12,
       }}
     >
-      <Collapse
-        defaultActiveKey={[]}
-        className="chat-panel-collapse"
-        expandIconPosition="end"
-      >
-        <Panel
-          key="chat-system"
-          header={
-            <div className="chat-panel-collapse-header-inner">
-              <Text strong>聊天系统提示</Text>
-              <Text type="secondary" className="chat-panel-collapse-header-desc">
-                仅作用于本侧「聊天」；与页面生成的系统提示词相互独立。
-              </Text>
-            </div>
-          }
-        >
-          <TextArea
-            value={chatSystemPrompt}
-            onChange={(e) => setChatSystemPrompt(e.target.value)}
-            placeholder="可选：定义聊天助手的角色与约束"
-            autoSize={{ minRows: 3, maxRows: 10 }}
-            disabled={busy}
-          />
-        </Panel>
-      </Collapse>
-
       <div
         ref={listRef}
         className="ai-chat-messages"
