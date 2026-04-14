@@ -1,9 +1,17 @@
 import { buildAnthropicUserContent, SYSTEM_PROMPT } from '@/prompts/system';
 import { createAnthropicClient } from '@/server/anthropic/client';
+import { fileAttachmentToAnthropicBlocks } from '@/server/anthropic/fileAttachmentToContentBlocks';
 import { getAnthropicApiKey, getDefaultAnthropicModelId } from '@/server/anthropic/env';
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
+
+type AttachmentBody = {
+  mediaType: string;
+  filename?: string;
+  url: string;
+};
 
 type Body = {
   prdText?: string;
@@ -11,7 +19,23 @@ type Body = {
   model?: string;
   max_tokens?: number;
   templateKey?: string;
+  attachments?: unknown;
 };
+
+function normalizeAttachments(raw: unknown): AttachmentBody[] {
+  if (!Array.isArray(raw)) return [];
+  const out: AttachmentBody[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue;
+    const o = item as Record<string, unknown>;
+    const mediaType = typeof o.mediaType === 'string' ? o.mediaType : '';
+    const url = typeof o.url === 'string' ? o.url : '';
+    if (!mediaType || !url) continue;
+    const filename = typeof o.filename === 'string' ? o.filename : undefined;
+    out.push({ mediaType, filename, url });
+  }
+  return out;
+}
 
 export async function POST(req: Request) {
   const apiKey = getAnthropicApiKey();
@@ -42,7 +66,12 @@ export async function POST(req: Request) {
   const templateKey =
     typeof body.templateKey === 'string' && body.templateKey.length > 0 ? body.templateKey : undefined;
 
-  const userContent = buildAnthropicUserContent({ prdText, templateKey });
+  const mainText = buildAnthropicUserContent({ prdText, templateKey });
+  const attachmentBlocks = normalizeAttachments(body.attachments).flatMap((a) =>
+    fileAttachmentToAnthropicBlocks(a),
+  );
+  const userContent: string | ContentBlockParam[] =
+    attachmentBlocks.length === 0 ? mainText : [{ type: 'text', text: mainText }, ...attachmentBlocks];
 
   const anthropic = createAnthropicClient();
 

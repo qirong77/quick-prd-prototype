@@ -1,3 +1,8 @@
+import type { FileUIPart } from 'ai';
+
+/** 与聊天附件结构一致，随 PRD 提交给 `/api/anthropic/messages` */
+export type StreamAttachment = FileUIPart;
+
 export type StreamRequestBody = {
   prdText: string;
   /** 为空时由服务端回退为默认 SYSTEM_PROMPT */
@@ -6,6 +11,8 @@ export type StreamRequestBody = {
   max_tokens?: number;
   /** 与 `src/template` 中模板 key 一致 */
   templateKey?: string;
+  /** 随 PRD 一并提交的参考图、文本文件等 */
+  attachments?: StreamAttachment[];
 };
 
 /**

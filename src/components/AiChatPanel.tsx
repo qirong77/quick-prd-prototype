@@ -1,7 +1,9 @@
+import { PaperClipOutlined } from '@ant-design/icons';
 import { useChat } from '@ai-sdk/react';
-import { Button, Empty, Input, Select, Typography, message } from 'antd';
-import { DefaultChatTransport, isTextUIPart, type UIMessage } from 'ai';
+import { Button, Empty, Input, Select, Space, Tag, Typography, message } from 'antd';
+import { DefaultChatTransport, isFileUIPart, isTextUIPart, type FileUIPart, type UIMessage } from 'ai';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ATTACHMENT_INPUT_ACCEPT, filesToFileUIParts, validateClientAttachmentFile } from '../lib/fileAttachmentsClient';
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -13,15 +15,21 @@ export type AiChatPanelProps = {
 };
 
 function textFromMessage(m: UIMessage): string {
-  return m.parts
-    .filter(isTextUIPart)
-    .map((p) => p.text)
-    .join('');
+  const lines: string[] = [];
+  for (const p of m.parts) {
+    if (isTextUIPart(p) && p.text) lines.push(p.text);
+    else if (isFileUIPart(p)) {
+      lines.push(`[附件] ${p.filename ?? '未命名'}（${p.mediaType}）`);
+    }
+  }
+  return lines.join('\n');
 }
 
 export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onModelId }) => {
   const [draft, setDraft] = useState('');
+  const [pendingFiles, setPendingFiles] = useState<FileUIPart[]>([]);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const chatFileInputRef = useRef<HTMLInputElement>(null);
 
   const transport = useMemo(
     () =>
@@ -53,13 +61,36 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
     el.scrollTop = el.scrollHeight;
   }, [messages, status]);
 
+  const onPickChatFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = e.target.files ? Array.from(e.target.files) : [];
+    e.target.value = '';
+    if (!picked.length) return;
+    const ok: File[] = [];
+    for (const f of picked) {
+      const err = validateClientAttachmentFile(f);
+      if (err) message.warning(err);
+      else ok.push(f);
+    }
+    if (!ok.length) return;
+    try {
+      const parts = await filesToFileUIParts(ok);
+      setPendingFiles((prev) => [...prev, ...parts]);
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '读取附件失败');
+    }
+  };
+
   const onSend = useCallback(async () => {
     const t = draft.trim();
-    if (!t || busy) return;
+    const filesArg = pendingFiles.length ? pendingFiles : undefined;
+    if ((!t && !filesArg) || busy) return;
     setDraft('');
+    setPendingFiles([]);
     clearError();
-    await sendMessage({ text: t });
-  }, [busy, clearError, draft, sendMessage]);
+    if (t && filesArg) await sendMessage({ text: t, files: filesArg });
+    else if (t) await sendMessage({ text: t });
+    else if (filesArg) await sendMessage({ files: filesArg });
+  }, [busy, clearError, draft, pendingFiles, sendMessage]);
 
   return (
     <div
@@ -121,6 +152,37 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
         </Text>
       ) : null}
 
+      <div style={{ flexShrink: 0 }}>
+        <Space size={[8, 8]} wrap>
+          <input
+            ref={chatFileInputRef}
+            type="file"
+            multiple
+            accept={ATTACHMENT_INPUT_ACCEPT}
+            style={{ display: 'none' }}
+            onChange={(ev) => void onPickChatFiles(ev)}
+          />
+          <Button
+            htmlType="button"
+            size="small"
+            icon={<PaperClipOutlined />}
+            disabled={busy}
+            onClick={() => chatFileInputRef.current?.click()}
+          >
+            上传图片或文本
+          </Button>
+          {pendingFiles.map((a, i) => (
+            <Tag
+              key={`${a.filename ?? ''}-${i}-${a.url.slice(0, 24)}`}
+              closable={!busy}
+              onClose={() => setPendingFiles((prev) => prev.filter((_, j) => j !== i))}
+            >
+              {a.filename ?? a.mediaType}
+            </Tag>
+          ))}
+        </Space>
+      </div>
+
       <TextArea
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
@@ -135,7 +197,12 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
       />
 
       <div className="chat-panel-actions" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <Button type="primary" onClick={() => void onSend()} loading={busy} disabled={!draft.trim()}>
+        <Button
+          type="primary"
+          onClick={() => void onSend()}
+          loading={busy}
+          disabled={!draft.trim() && pendingFiles.length === 0}
+        >
           发送
         </Button>
         <Button onClick={() => void stop()} disabled={!busy}>

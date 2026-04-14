@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import 'antd/dist/antd.css';
 import { ChatPanel } from './components/ChatPanel';
 import { PreviewPanel } from './components/PreviewPanel';
-import { streamAnthropicAssistantText } from './lib/anthropicStream';
+import { streamAnthropicAssistantText, type StreamAttachment } from './lib/anthropicStream';
 import { getAnthropicModelIds, getDefaultAnthropicModelId } from './lib/modelList';
 import { getDefaultCodeForTemplateKey } from './template/readDefaultCode';
 import { SYSTEM_PROMPT } from './prompts/system';
@@ -35,6 +35,7 @@ const App: React.FC = () => {
   const [streamingText, setStreamingText] = useState('');
   const [loading, setLoading] = useState(false);
   const [previewTabKey, setPreviewTabKey] = useState('preview');
+  const [generateAttachments, setGenerateAttachments] = useState<StreamAttachment[]>([]);
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -47,7 +48,13 @@ const App: React.FC = () => {
     setStreamingText('');
     try {
       const full = await streamAnthropicAssistantText(
-        { prdText, systemPrompt, model: modelId, templateKey },
+        {
+          prdText,
+          systemPrompt,
+          model: modelId,
+          templateKey,
+          attachments: generateAttachments.length ? generateAttachments : undefined,
+        },
         (acc) => setStreamingText(acc),
         ac.signal,
       );
@@ -64,7 +71,7 @@ const App: React.FC = () => {
       setLoading(false);
       abortRef.current = null;
     }
-  }, [prdText, systemPrompt, modelId, templateKey]);
+  }, [prdText, systemPrompt, modelId, templateKey, generateAttachments]);
 
   const onStop = useCallback(() => {
     abortRef.current?.abort();
@@ -99,6 +106,8 @@ const App: React.FC = () => {
               modelIds={modelIds}
               modelId={modelId}
               onModelId={setModelId}
+              generateAttachments={generateAttachments}
+              onGenerateAttachments={setGenerateAttachments}
             />
           </div>
           <PreviewPanel

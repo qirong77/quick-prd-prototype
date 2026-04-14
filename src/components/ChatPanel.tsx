@@ -1,5 +1,8 @@
-import { Button, Card, Collapse, Radio, Select, Typography } from 'antd';
-import React, { useState } from 'react';
+import { PaperClipOutlined } from '@ant-design/icons';
+import { Button, Card, Collapse, message, Radio, Select, Space, Tag, Typography } from 'antd';
+import React, { useRef, useState } from 'react';
+import { ATTACHMENT_INPUT_ACCEPT, filesToFileUIParts, validateClientAttachmentFile } from '../lib/fileAttachmentsClient';
+import type { StreamAttachment } from '../lib/anthropicStream';
 import { TEMPLATES } from '../template';
 import { AiChatPanel } from './AiChatPanel';
 import { PrdMarkdownTextarea } from './PrdMarkdownTextarea';
@@ -20,6 +23,8 @@ export type ChatPanelProps = {
     modelIds: string[];
     modelId: string;
     onModelId: (v: string) => void;
+    generateAttachments: StreamAttachment[];
+    onGenerateAttachments: React.Dispatch<React.SetStateAction<StreamAttachment[]>>;
 };
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
@@ -35,8 +40,31 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     modelIds,
     modelId,
     onModelId,
+    generateAttachments,
+    onGenerateAttachments,
 }) => {
     const [sidebarMode, setSidebarMode] = useState<'generate' | 'chat'>('generate');
+    const generateFileInputRef = useRef<HTMLInputElement>(null);
+
+    const onPickGenerateFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        // 必须先拷贝 File[]：清空 value 后，同一 FileList 引用会被浏览器置空。
+        const picked = e.target.files ? Array.from(e.target.files) : [];
+        e.target.value = '';
+        if (!picked.length) return;
+        const ok: File[] = [];
+        for (const f of picked) {
+            const err = validateClientAttachmentFile(f);
+            if (err) message.warning(err);
+            else ok.push(f);
+        }
+        if (!ok.length) return;
+        try {
+            const parts = await filesToFileUIParts(ok);
+            onGenerateAttachments((prev) => [...prev, ...parts]);
+        } catch (err) {
+            message.error(err instanceof Error ? err.message : '读取附件失败');
+        }
+    };
 
     return (
         <Card
@@ -97,6 +125,41 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                                 showSearch
                                 optionFilterProp="label"
                             />
+                        </div>
+                        <div style={{ flexShrink: 0 }}>
+                            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
+                                参考附件（可选）
+                            </Text>
+                            <Space size={[8, 8]} wrap style={{ width: '100%' }}>
+                                <input
+                                    ref={generateFileInputRef}
+                                    type="file"
+                                    multiple
+                                    accept={ATTACHMENT_INPUT_ACCEPT}
+                                    style={{ display: 'none' }}
+                                    onChange={(ev) => void onPickGenerateFiles(ev)}
+                                />
+                                <Button
+                                    htmlType="button"
+                                    size='small'
+                                    icon={<PaperClipOutlined />}
+                                    disabled={loading}
+                                    onClick={() => generateFileInputRef.current?.click()}
+                                >
+                                    上传图片或文本
+                                </Button>
+                                {generateAttachments.map((a, i) => (
+                                    <Tag
+                                        key={`${a.filename ?? ''}-${i}-${a.url.slice(0, 24)}`}
+                                        closable={!loading}
+                                        onClose={() =>
+                                            onGenerateAttachments((prev) => prev.filter((_, j) => j !== i))
+                                        }
+                                    >
+                                        {a.filename ?? a.mediaType}
+                                    </Tag>
+                                ))}
+                            </Space>
                         </div>
                         <Collapse
                             defaultActiveKey={['prd']}
