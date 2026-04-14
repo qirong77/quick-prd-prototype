@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "build:remote": "node scripts/build-remote.mjs",
-    "start:remote": "npm i && PORT=4096 HOSTNAME=0.0.0.0 bun run ./server.js",
     "lint": "next lint",
     "model-smoke": "tsx scripts/model-smoke.ts"
   },
