@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { DM_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
+import { ClickToReactComponent } from '@/components/ClickToReactComponent';
 import { Providers } from './providers';
 import './globals.css';
 
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="zh-CN" className={dmSans.variable}>
       <body className={dmSans.className}>
+        <ClickToReactComponent />
         <Providers>
           <div className="app-root">{children}</div>
         </Providers>

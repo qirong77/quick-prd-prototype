@@ -78,6 +78,9 @@ const App: React.FC = () => {
             Quick PRD Prototype
           </Title>
           <div className="app-main-title-kicker">从 PRD 快速生成可运行的前端交互示例</div>
+          <div style={{ marginLeft: 'auto' }}>
+            最后更新于 {process.env.NEXT_PUBLIC_BUILD_TIME_BJ ?? '——'}
+          </div>
         </div>
       </Header>
       <Content className="app-shell-content" style={{ minWidth: 0, overflow: 'hidden' }}>
