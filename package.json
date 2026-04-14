@@ -15,6 +15,7 @@
   "dependencies": {
     "@ai-sdk/react": "^3.0.160",
     "@ant-design/icons": "^4.8.3",
+    "@anthropic-ai/sdk": "^0.88.0",
     "ai": "^6.0.158",
     "antd": "^4.24.16",
     "moment": "^2.30.1",
