@@ -1,2 +1,4 @@
 node_modules
 dist
+.next
+server/remote-dist

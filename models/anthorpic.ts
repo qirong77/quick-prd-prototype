@@ -1,3 +1,4 @@
+// 这是一个独立的文件模块，不会引用其他的模块，只依赖于openai
 import OpenAI from "openai";
 
 function getKeyAndUrl(supplier: "uyilink" | "tokencheap" = "uyilink") {
@@ -18,6 +19,8 @@ const models: string[] = [
   "claude-sonnet-4-5-20250929",
   "claude-sonnet-4-6",
 ];
+const systemPrompt = ``;
+const query = `你是什么模型？模型的型号是多少？`;
 
 function buildMessages(
   system: string,
@@ -82,9 +85,20 @@ async function streamChatCompletion(options: {
   return full;
 }
 
-
-export const anthorpic = {
-  streamChatCompletion,
-  getKeyAndUrl,
-  models,
+async function main() {
+  const { baseURL, apiKey } = getKeyAndUrl();
+  await streamChatCompletion({
+    baseURL,
+    apiKey,
+    model: models[0],
+    systemPrompt,
+    userQuery: query,
+    onDelta: (piece) => {
+      process.stdout.write(piece);
+    },
+  });
 }
+
+main().catch((err) => {
+  console.error("error", err);
+});

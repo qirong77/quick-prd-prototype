@@ -16,10 +16,15 @@
 }
 
 html,
-body,
-#root {
+body {
   height: 100%;
   margin: 0;
+}
+
+.app-root {
+  min-height: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 html {
@@ -28,8 +33,6 @@ html {
 }
 
 body {
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, 'Noto Sans', sans-serif;
   overflow-x: hidden;
   max-width: 100%;
   box-sizing: border-box;
@@ -42,11 +45,6 @@ body {
 *::before,
 *::after {
   box-sizing: inherit;
-}
-
-#root {
-  min-width: 0;
-  max-width: 100%;
 }
 
 /*
@@ -189,7 +187,6 @@ body {
   border: 1px solid var(--app-border);
 }
 
-/* Collapse：自定义的 display:flex !important 会压过 .ant-collapse-content-hidden，导致折叠无效 */
 .chat-panel-collapse .ant-collapse-content.ant-collapse-content-hidden {
   display: none !important;
 }
@@ -210,7 +207,6 @@ body {
   font-weight: normal;
 }
 
-/* ChatPanel：Collapse 占满 Card 中部；系统提示词随内容高度，需求描述独占剩余高度 */
 .chat-panel-collapse.ant-collapse {
   flex: 1 1 0;
   min-height: 0;
@@ -244,10 +240,6 @@ body {
   overflow: hidden;
 }
 
-/*
- * 最后一项 antd 默认 border-bottom: 0；本面板折叠时仍占满剩余高度，需在标题行保留底边，
- * 否则「需求描述」折叠后标题与下方留白连成一片。
- */
 .chat-panel-collapse-panel-prd.ant-collapse-item:not(.ant-collapse-item-active) > .ant-collapse-header {
   border-bottom: 1px solid var(--app-border) !important;
 }
@@ -280,7 +272,6 @@ body {
   gap: 8px;
 }
 
-/* ChatPanel：左侧栏剩余高度由 flex 分配，输入框填满包裹层 */
 .chat-panel-textarea-wrap {
   flex: 1 1 0;
   min-height: 0;
@@ -297,7 +288,6 @@ body {
   line-height: 1.5;
 }
 
-/* 系统提示词：高度由 autoSize 决定；内层滚动，不再套一层边框 */
 .chat-panel-system-editor-wrap {
   display: flex;
   flex-direction: column;
@@ -335,7 +325,6 @@ body {
   box-shadow: none !important;
 }
 
-/* PRD：轻量 Markdown 原文编辑区（antd TextArea） */
 .chat-panel-prd-editor-wrap {
   flex: 1 1 0;
   min-height: 0;
@@ -375,7 +364,6 @@ body {
   box-shadow: none !important;
 }
 
-/* 主布局：避免窄屏下 minmax(360px) 撑出横向滚动 */
 .app-main-grid {
   display: grid;
   grid-template-columns: minmax(0, min(46vw, 520px)) minmax(0, 1fr);
@@ -391,7 +379,6 @@ body {
   min-width: 0;
 }
 
-/* 左侧栏：占满网格行高，供内部 Card height:100% */
 .app-shell-chat {
   min-width: 0;
   min-height: 0;
@@ -400,12 +387,10 @@ body {
   flex-direction: column;
 }
 
-/* 预览列外壳：不参与 .app-shell 主题，仅保留布局需要的裁剪 */
 .preview-panel-chrome.ant-card {
   overflow: hidden;
 }
 
-/* 预览区 Tabs 撑满高度 */
 .preview-panel-tabs.ant-tabs {
   display: flex;
   flex-direction: column;
@@ -423,8 +408,6 @@ body {
   min-height: 0;
 }
 
-/* 勿对全部 .ant-tabs-tabpane 写 display:flex：特异性会压过
-   .ant-tabs-tabpane-hidden { display:none }，导致两个 Tab 内容同时露出、切换「无效」。 */
 .preview-panel-tabs .ant-tabs-tabpane {
   height: 100%;
   min-height: 0;
@@ -437,7 +420,6 @@ body {
   min-height: 0;
 }
 
-/* 预览 Tab：内部区域可纵向滚动 */
 .preview-tab-preview-root {
   flex: 1 1 0;
   min-height: 0;
@@ -499,7 +481,6 @@ body {
 .preview-canvas {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     'Noto Sans', sans-serif;
-  /* padding: 20px; */
   background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-sm);

@@ -1,6 +1,6 @@
+'use client';
+
 import { Layout, message, Typography } from 'antd';
-import zhCN from 'antd/es/locale/zh_CN';
-import { ConfigProvider } from 'antd';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import 'antd/dist/antd.css';
 import { ChatPanel } from './components/ChatPanel';
@@ -71,45 +71,43 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <ConfigProvider locale={zhCN}>
-      <Layout className="app-root-layout" style={{ minHeight: '100%', minWidth: 0, overflow: 'hidden' }}>
-        <Header className="app-shell app-shell-header" style={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
-          <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Title level={1} ellipsis className="app-main-title" style={{ marginBottom: 0 }}>
-              Quick PRD Prototype
-            </Title>
-            <div className="app-main-title-kicker">从 PRD 快速生成可运行的前端交互示例</div>
-          </div>
-        </Header>
-        <Content className="app-shell-content" style={{ minWidth: 0, overflow: 'hidden' }}>
-          <div className="app-main-grid">
-            <div className="app-shell app-shell-chat">
-              <ChatPanel
-                prdText={prdText}
-                onPrdText={setPrdText}
-                systemPrompt={systemPrompt}
-                onSystemPrompt={setSystemPrompt}
-                loading={loading}
-                onGenerate={onGenerate}
-                onStop={onStop}
-                templateKey={templateKey}
-                onTemplateKey={setTemplateKey}
-                modelIds={modelIds}
-                modelId={modelId}
-                onModelId={setModelId}
-              />
-            </div>
-            <PreviewPanel
-              streamingText={streamingText}
+    <Layout className="app-root-layout" style={{ minHeight: '100%', minWidth: 0, overflow: 'hidden' }}>
+      <Header className="app-shell app-shell-header" style={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Title level={1} ellipsis className="app-main-title" style={{ marginBottom: 0 }}>
+            Quick PRD Prototype
+          </Title>
+          <div className="app-main-title-kicker">从 PRD 快速生成可运行的前端交互示例</div>
+        </div>
+      </Header>
+      <Content className="app-shell-content" style={{ minWidth: 0, overflow: 'hidden' }}>
+        <div className="app-main-grid">
+          <div className="app-shell app-shell-chat">
+            <ChatPanel
+              prdText={prdText}
+              onPrdText={setPrdText}
+              systemPrompt={systemPrompt}
+              onSystemPrompt={setSystemPrompt}
               loading={loading}
-              fallbackCode={getDefaultCodeForTemplateKey(templateKey)}
-              activeTabKey={previewTabKey}
-              onTabChange={setPreviewTabKey}
+              onGenerate={onGenerate}
+              onStop={onStop}
+              templateKey={templateKey}
+              onTemplateKey={setTemplateKey}
+              modelIds={modelIds}
+              modelId={modelId}
+              onModelId={setModelId}
             />
           </div>
-        </Content>
-      </Layout>
-    </ConfigProvider>
+          <PreviewPanel
+            streamingText={streamingText}
+            loading={loading}
+            fallbackCode={getDefaultCodeForTemplateKey(templateKey)}
+            activeTabKey={previewTabKey}
+            onTabChange={setPreviewTabKey}
+          />
+        </div>
+      </Content>
+    </Layout>
   );
 };
 
