@@ -22,7 +22,7 @@ function textFromMessage(m: UIMessage): string {
 
 export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onModelId }) => {
   const [chatSystemPrompt, setChatSystemPrompt] = useState(
-    '你是乐于助人的助手，回答简洁、可执行；与右侧「页面生成」无关的独立对话。',
+    '',
   );
   const [draft, setDraft] = useState('');
   const listRef = useRef<HTMLDivElement | null>(null);
