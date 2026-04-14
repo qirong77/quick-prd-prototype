@@ -7,6 +7,8 @@ export type TemplateDef = {
   systemPrompt: string;
   /** 左侧「需求描述」初始正文 */
   instructions: string;
+  /** 预览与用户消息用的默认骨架 TSX */
+  skeletonCode: string;
 };
 
 export const TEMPLATES: TemplateDef[] = [DEFAULT_TEMPLATE as TemplateDef];
