@@ -4,10 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --turbopack",
+    "build": "next build --turbopack",
     "start": "next start",
     "build:remote": "node scripts/build-remote.mjs",
+    "pack:remote": "npm run build:remote && tar -czf server/remote-dist.tgz -C server remote-dist && echo \"已生成 server/remote-dist.tgz（上传服务器后解压即可）\"",
     "start:remote": "PORT=4096 HOSTNAME=0.0.0.0 node server/remote-dist/server.js",
     "lint": "next lint",
     "model-smoke": "tsx scripts/model-smoke.ts"

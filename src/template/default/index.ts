@@ -6,7 +6,7 @@ export const DEFAULT_TEMPLATE = {
   key: 'list_standard',
   label: '标准列表页（搜索 + 表格 + 抽屉）',
   systemPrompt: '',
-  instructions: `根据下方【产品描述 / PRD】生成「标准后台列表页」：实现 PRD 中各节的控件与交互；将「一、搜索栏」映射为页顶筛选表单，「二、操作栏」为表格上方按钮区，「三、表格项」为 Table 列与单元格展示，「四、表格操作」为行内或批量操作（查看/编辑等用 Drawer 或 Modal）。若某节在 PRD 中未出现，可省略或极简占位。
+  instructions: `根据下方【产品描述 / PRD】生成前端页面：
 
 以下为与用户输入格式对齐的 PRD 结构范例（实现以用户正文为准）：
 

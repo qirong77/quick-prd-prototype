@@ -1,4 +1,5 @@
 node_modules
 dist
 .next
-server/remote-dist
+.DS_Store
+/server/remote-dist

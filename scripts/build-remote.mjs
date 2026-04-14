@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 本地执行 `next build` 后，将 standalone 可运行目录复制到 `server/remote-dist/`，便于上传到弱性能服务器。
+ * 本地执行 `next build --turbopack` 后，将 standalone 可运行目录复制到 `server/remote-dist/`，便于上传到弱性能服务器。
  * 结构对齐 Next 官方：standalone + `.next/static` + `public`。
  */
 import { execSync } from 'node:child_process';
@@ -13,8 +13,8 @@ const root = join(__dirname, '..');
 
 process.chdir(root);
 
-console.log('[build:remote] next build …');
-execSync('npx next build', { stdio: 'inherit', env: process.env });
+console.log('[build:remote] next build --turbopack …');
+execSync('npx next build --turbopack', { stdio: 'inherit', env: process.env });
 
 const standaloneDir = join(root, '.next', 'standalone');
 const staticSrc = join(root, '.next', 'static');
@@ -75,5 +75,8 @@ writeFileSync(
 );
 
 console.log(
-  '[build:remote] 完成：上传 server/remote-dist/ 到服务器后，在该目录执行 `npm start`（默认 4096 端口）。若直接 `node server.js` 请设置 PORT=4096。完整仓库下可在根目录执行 `npm run start:remote`。',
+  '[build:remote] 完成：server/remote-dist/ 内含 node_modules 与 .next，为 Next standalone 运行所需（无法在服务端省略）。',
+);
+console.log(
+  '[build:remote] 部署建议：体积大时勿把整个目录提交 Git，可执行 `npm run pack:remote` 生成 server/remote-dist.tgz，用 scp/rsync 上传；.gitignore 已改为只忽略根目录 node_modules/.next，避免误忽略本目录。',
 );
