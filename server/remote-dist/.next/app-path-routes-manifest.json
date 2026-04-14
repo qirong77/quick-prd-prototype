@@ -1,6 +1,0 @@
-{
-  "/_not-found/page": "/_not-found",
-  "/api/anthropic/messages/route": "/api/anthropic/messages",
-  "/api/chat/route": "/api/chat",
-  "/page": "/"
-}
