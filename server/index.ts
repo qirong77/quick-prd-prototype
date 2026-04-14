@@ -1,4 +1,5 @@
 // bun run server/test-server/index.ts
+// pm2 start index.ts --interpreter bun
 // @ts-ignore
 import { serve } from "bun";
 
