@@ -146,7 +146,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                                     disabled={loading}
                                     onClick={() => generateFileInputRef.current?.click()}
                                 >
-                                    上传图片或文本
+                                    上传文件
                                 </Button>
                                 {generateAttachments.map((a, i) => (
                                     <Tag

@@ -169,7 +169,7 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
             disabled={busy}
             onClick={() => chatFileInputRef.current?.click()}
           >
-            上传图片或文本
+            上传文件
           </Button>
           {pendingFiles.map((a, i) => (
             <Tag
