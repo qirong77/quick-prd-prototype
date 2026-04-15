@@ -1,8 +1,25 @@
-import { PaperClipOutlined } from '@ant-design/icons';
+import { PaperClipOutlined, PlusOutlined, SettingOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useChat } from '@ai-sdk/react';
-import { Button, Empty, Input, Select, Space, Tag, Typography, message } from 'antd';
+import {
+  Button,
+  Checkbox,
+  Divider,
+  Empty,
+  Form,
+  Input,
+  Modal,
+  Popover,
+  Select,
+  Space,
+  Tag,
+  Typography,
+  message,
+} from 'antd';
 import { DefaultChatTransport, isFileUIPart, isTextUIPart, type FileUIPart, type UIMessage } from 'ai';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CHAT_SKILL_AUTHORING_TEMPLATE } from '../lib/chatSkills/authoringTemplate';
+import type { ChatSkillDef } from '../lib/chatSkills/types';
+import { loadChatSkills, newChatSkillId, saveChatSkills } from '../lib/chatSkills/storage';
 import { ATTACHMENT_INPUT_ACCEPT, filesToFileUIParts, validateClientAttachmentFile } from '../lib/fileAttachmentsClient';
 
 const { Text } = Typography;
@@ -28,8 +45,27 @@ function textFromMessage(m: UIMessage): string {
 export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onModelId }) => {
   const [draft, setDraft] = useState('');
   const [pendingFiles, setPendingFiles] = useState<FileUIPart[]>([]);
+  const [skills, setSkills] = useState<ChatSkillDef[]>(() => loadChatSkills());
+  /** 本轮对话注入顺序：排在后的 Skill 更靠下合并进 system */
+  const [enabledSkillIds, setEnabledSkillIds] = useState<string[]>([]);
+  const [skillsPopoverOpen, setSkillsPopoverOpen] = useState(false);
+  const [manageOpen, setManageOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingSkill, setEditingSkill] = useState<ChatSkillDef | null>(null);
+  const [skillForm] = Form.useForm<{ name: string; description?: string; body: string }>();
   const listRef = useRef<HTMLDivElement | null>(null);
   const chatFileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setSkills(loadChatSkills());
+  }, []);
+
+  const enabledSkillsPayload = useMemo(() => {
+    return enabledSkillIds
+      .map((id) => skills.find((s) => s.id === id))
+      .filter((s): s is ChatSkillDef => Boolean(s))
+      .map(({ name, description, body }) => ({ name, description, body }));
+  }, [enabledSkillIds, skills]);
 
   const transport = useMemo(
     () =>
@@ -40,10 +76,11 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
             id,
             messages,
             model: modelId,
+            ...(enabledSkillsPayload.length > 0 ? { skills: enabledSkillsPayload } : {}),
           },
         }),
       }),
-    [modelId],
+    [enabledSkillsPayload, modelId],
   );
 
   const { messages, sendMessage, status, stop, setMessages, error, clearError } = useChat({
@@ -91,6 +128,141 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
     else if (t) await sendMessage({ text: t });
     else if (filesArg) await sendMessage({ files: filesArg });
   }, [busy, clearError, draft, pendingFiles, sendMessage]);
+
+  const toggleSkillEnabled = useCallback((id: string, checked: boolean) => {
+    setEnabledSkillIds((prev) => {
+      if (checked) return prev.includes(id) ? prev : [...prev, id];
+      return prev.filter((x) => x !== id);
+    });
+  }, []);
+
+  const openCreateSkill = useCallback(() => {
+    setSkillsPopoverOpen(false);
+    setEditingSkill(null);
+    skillForm.resetFields();
+    setEditOpen(true);
+  }, [skillForm]);
+
+  const openEditSkill = useCallback(
+    (s: ChatSkillDef) => {
+      setEditingSkill(s);
+      skillForm.setFieldsValue({
+        name: s.name,
+        description: s.description,
+        body: s.body,
+      });
+      setEditOpen(true);
+    },
+    [skillForm],
+  );
+
+  const persistSkills = useCallback((next: ChatSkillDef[]) => {
+    setSkills(next);
+    saveChatSkills(next);
+  }, []);
+
+  const onSaveSkill = useCallback(async () => {
+    try {
+      const v = await skillForm.validateFields();
+      const name = v.name.trim();
+      const body = v.body.trim();
+      if (!name || !body) {
+        message.warning('请填写名称与指令正文');
+        return;
+      }
+      if (editingSkill) {
+        const next = skills.map((s) =>
+          s.id === editingSkill.id
+            ? {
+                ...s,
+                name,
+                description: v.description?.trim() || undefined,
+                body,
+              }
+            : s,
+        );
+        persistSkills(next);
+        message.success('已保存');
+      } else {
+        persistSkills([
+          ...skills,
+          {
+            id: newChatSkillId(),
+            name,
+            description: v.description?.trim() || undefined,
+            body,
+          },
+        ]);
+        message.success('已添加 Skill');
+      }
+      setEditOpen(false);
+    } catch {
+      // 表单校验失败
+    }
+  }, [editingSkill, persistSkills, skillForm, skills]);
+
+  const onDeleteSkill = useCallback(
+    (id: string) => {
+      Modal.confirm({
+        title: '删除该 Skill？',
+        content: '删除后不可恢复；若已启用，将从本轮启用列表移除。',
+        okText: '删除',
+        okType: 'danger',
+        cancelText: '取消',
+        onOk: () => {
+          persistSkills(skills.filter((s) => s.id !== id));
+          setEnabledSkillIds((prev) => prev.filter((x) => x !== id));
+          message.success('已删除');
+        },
+      });
+    },
+    [persistSkills, skills],
+  );
+
+  const skillsPopover = (
+    <div style={{ maxWidth: 320, maxHeight: 320, overflow: 'auto' }}>
+      <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
+        勾选要在本轮请求中注入的 Skills
+      </Text>
+      <Space direction="vertical" style={{ width: '100%' }} size={6}>
+        {skills.map((s) => (
+          <div key={s.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <Checkbox
+              checked={enabledSkillIds.includes(s.id)}
+              disabled={busy}
+              onChange={(e) => toggleSkillEnabled(s.id, e.target.checked)}
+            />
+            <div style={{ minWidth: 0 }}>
+              <Text strong style={{ fontSize: 13 }}>
+                {s.name}
+              </Text>
+              {s.description ? (
+                <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>
+                  {s.description}
+                </Text>
+              ) : null}
+            </div>
+          </div>
+        ))}
+      </Space>
+      <Divider style={{ margin: '12px 0' }} />
+      <Space wrap>
+        <Button size="small" type="primary" icon={<PlusOutlined />} onClick={openCreateSkill}>
+          新建 Skill
+        </Button>
+        <Button
+          size="small"
+          icon={<SettingOutlined />}
+          onClick={() => {
+            setSkillsPopoverOpen(false);
+            setManageOpen(true);
+          }}
+        >
+          管理全部
+        </Button>
+      </Space>
+    </div>
+  );
 
   return (
     <div
@@ -171,6 +343,27 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
           >
             上传文件
           </Button>
+          <Popover
+            title="Skills"
+            trigger="click"
+            open={skillsPopoverOpen}
+            onOpenChange={setSkillsPopoverOpen}
+            content={skillsPopover}
+            placement="topLeft"
+          >
+            <Button htmlType="button" size="small" icon={<ThunderboltOutlined />} disabled={busy}>
+              Skills{enabledSkillIds.length ? `（${enabledSkillIds.length}）` : ''}
+            </Button>
+          </Popover>
+          <Button
+            htmlType="button"
+            size="small"
+            icon={<SettingOutlined />}
+            disabled={busy}
+            onClick={() => setManageOpen(true)}
+          >
+            管理 Skills
+          </Button>
           {pendingFiles.map((a, i) => (
             <Tag
               key={`${a.filename ?? ''}-${i}-${a.url.slice(0, 24)}`}
@@ -182,6 +375,30 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
           ))}
         </Space>
       </div>
+
+      {enabledSkillIds.length > 0 ? (
+        <div style={{ flexShrink: 0 }}>
+          <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 6 }}>
+            已启用 Skills（点击 × 仅取消启用，不删除库中条目）
+          </Text>
+          <Space size={[6, 6]} wrap>
+            {enabledSkillIds.map((id) => {
+              const s = skills.find((x) => x.id === id);
+              if (!s) return null;
+              return (
+                <Tag
+                  key={id}
+                  color="geekblue"
+                  closable={!busy}
+                  onClose={() => toggleSkillEnabled(id, false)}
+                >
+                  {s.name}
+                </Tag>
+              );
+            })}
+          </Space>
+        </div>
+      ) : null}
 
       <TextArea
         value={draft}
@@ -228,6 +445,99 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
           optionFilterProp="label"
         />
       </div>
+
+      <Modal
+        title="管理 Skills"
+        open={manageOpen}
+        onCancel={() => setManageOpen(false)}
+        footer={
+          <Button type="primary" onClick={() => setManageOpen(false)}>
+            完成
+          </Button>
+        }
+        width={560}
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size={10}>
+          <Button type="dashed" block icon={<PlusOutlined />} onClick={openCreateSkill}>
+            新建 Skill
+          </Button>
+          {skills.map((s) => (
+            <div
+              key={s.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '8px 10px',
+                border: '1px solid #f0f0f0',
+                borderRadius: 8,
+                background: '#fafafa',
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <Text strong style={{ display: 'block' }}>
+                  {s.name}
+                </Text>
+                {s.description ? (
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    {s.description}
+                  </Text>
+                ) : null}
+              </div>
+              <Button size="small" onClick={() => openEditSkill(s)}>
+                编辑
+              </Button>
+              <Button size="small" danger onClick={() => onDeleteSkill(s.id)}>
+                删除
+              </Button>
+            </div>
+          ))}
+        </Space>
+      </Modal>
+
+      <Modal
+        title={editingSkill ? '编辑 Skill' : '新建 Skill'}
+        open={editOpen}
+        onCancel={() => setEditOpen(false)}
+        onOk={() => void onSaveSkill()}
+        okText="保存"
+        cancelText="取消"
+        width={640}
+        destroyOnClose
+      >
+        <Form form={skillForm} layout="vertical" preserve={false}>
+          <Form.Item
+            name="name"
+            label="名称"
+            rules={[{ required: true, message: '请填写名称' }]}
+          >
+            <Input placeholder="例如：PRD 评审助手" maxLength={120} showCount />
+          </Form.Item>
+          <Form.Item name="description" label="简短说明（可选）">
+            <Input placeholder="一句话说明用途，便于在列表中识别" maxLength={200} showCount />
+          </Form.Item>
+          <Form.Item
+            name="body"
+            label="指令正文"
+            rules={[{ required: true, message: '请填写指令正文' }]}
+            extra={
+              <Button
+                type="link"
+                size="small"
+                style={{ paddingLeft: 0 }}
+                onClick={() => skillForm.setFieldsValue({ body: CHAT_SKILL_AUTHORING_TEMPLATE })}
+              >
+                插入「Skill 编写模板」骨架
+              </Button>
+            }
+          >
+            <Input.TextArea
+              placeholder="写入要注入模型的完整规则、流程与输出格式…"
+              autoSize={{ minRows: 10, maxRows: 22 }}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

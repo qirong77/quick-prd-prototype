@@ -5,6 +5,10 @@ import {
   type UIMessage,
 } from 'ai';
 import { createAnthropicClient } from '@/server/anthropic/client';
+import {
+  buildSystemPromptFromSkills,
+  normalizeChatSkillsPayload,
+} from '@/server/anthropic/chatSkillsSystem';
 import { getAnthropicApiKey, getDefaultAnthropicModelId } from '@/server/anthropic/env';
 import { uiMessagesToAnthropicMessages } from '@/server/anthropic/uiStream';
 
@@ -45,6 +49,10 @@ export async function POST(req: Request) {
     return Response.json({ error: '没有可发送的对话消息' }, { status: 400 });
   }
 
+  const skillsNorm = normalizeChatSkillsPayload(body.skills);
+  const systemFromSkills =
+    skillsNorm.length > 0 ? buildSystemPromptFromSkills(skillsNorm) : undefined;
+
   const anthropic = createAnthropicClient();
 
   const stream = createUIMessageStream({
@@ -56,6 +64,7 @@ export async function POST(req: Request) {
         ms = anthropic.messages.stream({
           model,
           max_tokens: maxOutputTokens,
+          ...(systemFromSkills ? { system: systemFromSkills } : {}),
           messages: anthropicMessages,
           thinking: { type: 'disabled' },
         });
