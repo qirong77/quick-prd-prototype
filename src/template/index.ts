@@ -1,3 +1,4 @@
+import { COMPLICATED_TEMPLATE } from './complicated';
 import { DEFAULT_TEMPLATE } from './default';
 
 export type TemplateDef = {
@@ -11,7 +12,10 @@ export type TemplateDef = {
   skeletonCode: string;
 };
 
-export const TEMPLATES: TemplateDef[] = [DEFAULT_TEMPLATE as TemplateDef];
+export const TEMPLATES: TemplateDef[] = [
+  DEFAULT_TEMPLATE as TemplateDef,
+  COMPLICATED_TEMPLATE as TemplateDef,
+];
 
 export function getDefaultTemplateKey(): string {
   return DEFAULT_TEMPLATE.key;

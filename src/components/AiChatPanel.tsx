@@ -17,6 +17,7 @@ import {
 } from 'antd';
 import { DefaultChatTransport, isFileUIPart, isTextUIPart, type FileUIPart, type UIMessage } from 'ai';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Markdown from 'react-markdown';
 import { CHAT_SKILL_AUTHORING_TEMPLATE } from '../lib/chatSkills/authoringTemplate';
 import type { ChatSkillDef } from '../lib/chatSkills/types';
 import { loadChatSkills, newChatSkillId, saveChatSkills } from '../lib/chatSkills/storage';
@@ -291,29 +292,40 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="发送一条消息开始对话" />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {messages.map((m) => (
-              <div
-                key={m.id}
-                className={`ai-chat-bubble ai-chat-bubble--${m.role}`}
-                style={{
-                  alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
-                  maxWidth: '92%',
-                  padding: '8px 12px',
-                  borderRadius: 10,
-                  background: m.role === 'user' ? '#e6f4ff' : '#fff',
-                  border: '1px solid #f0f0f0',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                  fontSize: 13,
-                  lineHeight: 1.55,
-                }}
-              >
-                <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>
-                  {m.role === 'user' ? '你' : '助手'}
-                </Text>
-                {textFromMessage(m) || (m.role === 'assistant' && busy ? '…' : '')}
-              </div>
-            ))}
+            {messages.map((m) => {
+              const text = textFromMessage(m);
+              return (
+                <div
+                  key={m.id}
+                  className={`ai-chat-bubble ai-chat-bubble--${m.role}`}
+                  style={{
+                    alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                    maxWidth: '92%',
+                    padding: '8px 12px',
+                    borderRadius: 10,
+                    background: m.role === 'user' ? '#e6f4ff' : '#fff',
+                    border: '1px solid #f0f0f0',
+                    wordBreak: 'break-word',
+                    fontSize: 13,
+                    lineHeight: 1.55,
+                    ...(m.role === 'user' ? { whiteSpace: 'pre-wrap' } : {}),
+                  }}
+                >
+                  <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>
+                    {m.role === 'user' ? '你' : '助手'}
+                  </Text>
+                  {m.role === 'assistant' ? (
+                    text ? (
+                      <div className="ai-chat-markdown">
+                        <Markdown>{text}</Markdown>
+                      </div>
+                    ) : busy ? '…' : null
+                  ) : (
+                    text || null
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

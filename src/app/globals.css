@@ -508,3 +508,111 @@ body {
   font-size: 14px;
   color: var(--app-accent);
 }
+
+/* ── AI Chat Markdown ── */
+.ai-chat-markdown {
+  overflow-wrap: break-word;
+}
+
+.ai-chat-markdown > :first-child {
+  margin-top: 0;
+}
+
+.ai-chat-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.ai-chat-markdown h1,
+.ai-chat-markdown h2,
+.ai-chat-markdown h3,
+.ai-chat-markdown h4 {
+  margin: 0.8em 0 0.4em;
+  line-height: 1.35;
+}
+
+.ai-chat-markdown h1 { font-size: 1.25em; }
+.ai-chat-markdown h2 { font-size: 1.15em; }
+.ai-chat-markdown h3 { font-size: 1.05em; }
+
+.ai-chat-markdown p {
+  margin: 0.45em 0;
+}
+
+.ai-chat-markdown ul,
+.ai-chat-markdown ol {
+  margin: 0.4em 0;
+  padding-left: 1.6em;
+}
+
+.ai-chat-markdown li {
+  margin: 0.15em 0;
+}
+
+.ai-chat-markdown code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.88em;
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.ai-chat-markdown pre {
+  margin: 0.5em 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #0f172a;
+  color: #e2e8f0;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ai-chat-markdown pre code {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+}
+
+.ai-chat-markdown blockquote {
+  margin: 0.5em 0;
+  padding: 4px 12px;
+  border-left: 3px solid var(--app-accent, #3730a3);
+  color: var(--app-text-muted, #64748b);
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.ai-chat-markdown table {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+  font-size: 12px;
+  width: 100%;
+}
+
+.ai-chat-markdown th,
+.ai-chat-markdown td {
+  border: 1px solid var(--app-border, #e2e8f0);
+  padding: 5px 8px;
+  text-align: left;
+}
+
+.ai-chat-markdown th {
+  background: rgba(15, 23, 42, 0.04);
+  font-weight: 600;
+}
+
+.ai-chat-markdown hr {
+  border: none;
+  border-top: 1px solid var(--app-border, #e2e8f0);
+  margin: 0.8em 0;
+}
+
+.ai-chat-markdown a {
+  color: var(--app-accent, #3730a3);
+  text-decoration: none;
+}
+
+.ai-chat-markdown a:hover {
+  text-decoration: underline;
+}
