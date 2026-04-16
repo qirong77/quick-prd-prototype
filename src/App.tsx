@@ -19,6 +19,41 @@ const App: React.FC = () => {
   const [modelId, setModelId] = useState(() => getDefaultAnthropicModelId(modelIds));
   const [templateKey, setTemplateKey] = useState(() => getDefaultTemplateKey());
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [leftWidthPx, setLeftWidthPx] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef<{ x: number; width: number } | null>(null);
+
+  const onResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const leftEl = containerRef.current?.querySelector('.app-panel-left') as HTMLElement | null;
+    const currentWidth = leftEl?.getBoundingClientRect().width ?? 400;
+    dragStartRef.current = { x: e.clientX, width: currentWidth };
+    setIsDragging(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!dragStartRef.current || !containerRef.current) return;
+      const containerWidth = containerRef.current.getBoundingClientRect().width;
+      const delta = ev.clientX - dragStartRef.current.x;
+      const newWidth = Math.max(260, Math.min(containerWidth - 280 - 20, dragStartRef.current.width + delta));
+      setLeftWidthPx(newWidth);
+    };
+
+    const onMouseUp = () => {
+      dragStartRef.current = null;
+      setIsDragging(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, []);
+
   const [prdText, setPrdText] = useState(() => getTemplate().instructions);
   const [systemPrompt, setSystemPrompt] = useState(() => {
     const t = getTemplate();
@@ -91,8 +126,11 @@ const App: React.FC = () => {
         </div>
       </Header>
       <Content className="app-shell-content" style={{ minWidth: 0, overflow: 'hidden' }}>
-        <div className="app-main-grid">
-          <div className="app-shell app-shell-chat">
+        <div ref={containerRef} className="app-main-grid">
+          <div
+            className="app-panel-left app-shell app-shell-chat"
+            style={leftWidthPx != null ? { width: leftWidthPx } : undefined}
+          >
             <ChatPanel
               prdText={prdText}
               onPrdText={setPrdText}
@@ -110,13 +148,22 @@ const App: React.FC = () => {
               onGenerateAttachments={setGenerateAttachments}
             />
           </div>
-          <PreviewPanel
-            streamingText={streamingText}
-            loading={loading}
-            fallbackCode={getDefaultCodeForTemplateKey(templateKey)}
-            activeTabKey={previewTabKey}
-            onTabChange={setPreviewTabKey}
-          />
+          <div
+            className={`app-resize-handle${isDragging ? ' app-resize-handle--active' : ''}`}
+            onMouseDown={onResizeStart}
+            title="拖动调整宽度"
+          >
+            <div className="app-resize-handle-icon" />
+          </div>
+          <div className="app-panel-right">
+            <PreviewPanel
+              streamingText={streamingText}
+              loading={loading}
+              fallbackCode={getDefaultCodeForTemplateKey(templateKey)}
+              activeTabKey={previewTabKey}
+              onTabChange={setPreviewTabKey}
+            />
+          </div>
         </div>
       </Content>
     </Layout>

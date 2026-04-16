@@ -62,8 +62,8 @@ body {
 .app-shell .ant-btn-primary:focus {
   background: var(--app-accent-hover) !important;
   border-color: var(--app-accent-hover) !important;
+  box-shadow: none !important;
 }
-
 .app-shell .ant-btn-primary[disabled],
 .app-shell .ant-btn-primary[disabled]:hover {
   background: rgba(55, 48, 163, 0.35) !important;
@@ -365,9 +365,9 @@ body {
 }
 
 .app-main-grid {
-  display: grid;
-  grid-template-columns: minmax(0, min(46vw, 520px)) minmax(0, 1fr);
-  gap: 20px;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
   width: 100%;
   min-width: 0;
   min-height: 520px;
@@ -377,6 +377,74 @@ body {
 
 .app-panel-column {
   min-width: 0;
+}
+
+.app-panel-left {
+  flex-shrink: 0;
+  width: min(46vw, 520px);
+  min-width: 0;
+  min-height: 0;
+}
+
+.app-panel-right {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── Resize Handle ── */
+.app-resize-handle {
+  flex-shrink: 0;
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: col-resize;
+  position: relative;
+  z-index: 10;
+  user-select: none;
+  border-radius: 4px;
+  transition: background 0.15s;
+  margin: 0 1px;
+}
+
+.app-resize-handle:hover,
+.app-resize-handle--active {
+  background: rgba(55, 48, 163, 0.07);
+}
+
+.app-resize-handle-icon {
+  position: relative;
+  width: 6px;
+  height: 24px;
+  color: var(--app-text-muted);
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+
+.app-resize-handle:hover .app-resize-handle-icon,
+.app-resize-handle--active .app-resize-handle-icon {
+  color: var(--app-accent);
+}
+
+.app-resize-handle-icon::before,
+.app-resize-handle-icon::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 7px 0 currentColor, 0 14px 0 currentColor;
+}
+
+.app-resize-handle-icon::before {
+  left: 0;
+}
+
+.app-resize-handle-icon::after {
+  right: 0;
 }
 
 .app-shell-chat {
@@ -615,4 +683,50 @@ body {
 
 .ai-chat-markdown a:hover {
   text-decoration: underline;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .app-shell-header.ant-layout-header {
+    padding-inline: 16px !important;
+  }
+
+  .app-shell-content.ant-layout-content {
+    padding: 12px !important;
+  }
+
+  .app-main-grid {
+    flex-direction: column;
+    height: calc(100vh - var(--app-header-h) - 24px);
+    min-height: 0;
+    gap: 8px;
+  }
+
+  .app-panel-left {
+    width: 100% !important;
+    max-width: 100%;
+    flex: 1 1 0;
+    min-height: 300px;
+  }
+
+  .app-panel-right {
+    flex: 1 1 0;
+    min-height: 300px;
+  }
+
+  .app-resize-handle {
+    display: none;
+  }
+
+  .app-shell-chat {
+    height: 100%;
+  }
+
+  .app-main-title {
+    font-size: 16px !important;
+  }
+
+  .app-main-title-kicker {
+    display: none !important;
+  }
 }
