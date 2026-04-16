@@ -234,6 +234,16 @@ body {
   font-weight: normal;
 }
 
+.chat-panel-field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--app-text-muted);
+  margin-bottom: 6px;
+}
+
 .chat-panel-collapse.ant-collapse {
   flex: 1 1 0;
   min-height: 0;
@@ -247,6 +257,23 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+.chat-panel-collapse > .ant-collapse-item > .ant-collapse-header {
+  transition: background 0.15s;
+}
+
+.chat-panel-collapse > .ant-collapse-item > .ant-collapse-header:hover {
+  background: rgba(15, 23, 42, 0.03) !important;
+}
+
+.chat-panel-collapse > .ant-collapse-item.ant-collapse-item-active > .ant-collapse-header {
+  background: rgba(55, 48, 163, 0.04) !important;
+  border-bottom: 1px solid rgba(55, 48, 163, 0.1) !important;
+}
+
+.chat-panel-collapse > .ant-collapse-item.ant-collapse-item-active > .ant-collapse-header .ant-collapse-header-text {
+  color: var(--app-accent);
 }
 
 .chat-panel-collapse-panel-system.ant-collapse-item {
@@ -318,10 +345,17 @@ body {
 .chat-panel-system-editor-wrap {
   display: flex;
   flex-direction: column;
-  border: none;
-  border-radius: 4px;
+  border: 1px solid var(--app-border-strong);
+  border-radius: var(--app-radius-sm);
   overflow: hidden;
-  background: transparent;
+  background: #fff;
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.chat-panel-system-editor-wrap:focus-within {
+  border-color: var(--app-accent);
+  box-shadow: 0 0 0 2px rgba(55, 48, 163, 0.1);
 }
 
 .chat-panel-system-editor-wrap--autosize {
@@ -345,7 +379,7 @@ body {
   line-height: 1.5;
   padding: 8px 10px 10px;
   color: var(--app-text);
-  background: rgba(15, 23, 42, 0.02) !important;
+  background: transparent !important;
 }
 
 .chat-panel-system-editor-wrap--autosize textarea.ant-input:focus {
@@ -357,10 +391,17 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  border: none;
-  border-radius: 4px;
+  border: 1px solid var(--app-border-strong);
+  border-radius: var(--app-radius-sm);
   overflow: hidden;
-  background: transparent;
+  background: #fff;
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.chat-panel-prd-editor-wrap:focus-within {
+  border-color: var(--app-accent);
+  box-shadow: 0 0 0 2px rgba(55, 48, 163, 0.1);
 }
 
 .chat-panel-prd-editor-wrap > .ant-input-textarea {
@@ -384,7 +425,7 @@ body {
   line-height: 1.55;
   padding: 10px 12px 12px;
   color: var(--app-text);
-  background: rgba(15, 23, 42, 0.02) !important;
+  background: transparent !important;
 }
 
 .chat-panel-prd-editor-wrap textarea.ant-input:focus {

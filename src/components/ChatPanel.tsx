@@ -91,9 +91,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                 }}
             >
                 <div style={{ flexShrink: 0, position: 'relative', zIndex: 1 }}>
-                    <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
-                        模式
-                    </Text>
+                    <Text className="chat-panel-field-label">模式</Text>
                     <Radio.Group
                         buttonStyle="solid"
                         value={sidebarMode}
@@ -112,9 +110,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                 {sidebarMode === 'generate' ? (
                     <>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                                模板
-                            </Text>
+                            <Text className="chat-panel-field-label">模板</Text>
                             <Select
                                 style={{ width: '100%' }}
                                 value={templateKey}
@@ -127,9 +123,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                             />
                         </div>
                         <div style={{ flexShrink: 0 }}>
-                            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
-                                参考附件（可选）
-                            </Text>
+                            <Text className="chat-panel-field-label">参考附件（可选）</Text>
                             <Space size={[8, 8]} wrap style={{ width: '100%' }}>
                                 <input
                                     ref={generateFileInputRef}
