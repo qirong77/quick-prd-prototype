@@ -74,6 +74,33 @@ body {
   border-radius: var(--app-radius-sm) !important;
 }
 
+.app-shell .ant-radio-button-wrapper:hover {
+  color: var(--app-accent) !important;
+}
+
+.app-shell .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+  background: var(--app-accent) !important;
+  border-color: var(--app-accent) !important;
+  color: #fff !important;
+}
+
+.app-shell .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled)::before {
+  background: var(--app-accent) !important;
+}
+
+.app-shell .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover {
+  background: var(--app-accent-hover) !important;
+  border-color: var(--app-accent-hover) !important;
+}
+
+.app-shell .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover::before {
+  background: var(--app-accent-hover) !important;
+}
+
+.app-shell .ant-radio-button-wrapper:focus-within {
+  box-shadow: 0 0 0 3px rgba(55, 48, 163, 0.12) !important;
+}
+
 .app-shell .ant-select-selector,
 .app-shell .ant-input,
 .app-shell .ant-input-affix-wrapper {
