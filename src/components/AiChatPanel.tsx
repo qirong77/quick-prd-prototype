@@ -8,6 +8,7 @@ import {
   Form,
   Input,
   Modal,
+  Popconfirm,
   Popover,
   Select,
   Space,
@@ -208,27 +209,15 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
     }
   }, [editingSkill, persistSkills, skillForm, skills]);
 
-  const onDeleteSkill = useCallback(
-    (id: string) => {
-      Modal.confirm({
-        title: '删除该 Skill？',
-        content: '删除后不可恢复；若已启用，将从本轮启用列表移除。',
-        okText: '删除',
-        okType: 'danger',
-        cancelText: '取消',
-        onOk: () => {
-          setSkills((prev) => {
-            const next = prev.filter((s) => s.id !== id);
-            saveChatSkills(next);
-            return next;
-          });
-          setEnabledSkillIds((prev) => prev.filter((x) => x !== id));
-          message.success('已删除');
-        },
-      });
-    },
-    [],
-  );
+  const onDeleteSkill = useCallback((id: string) => {
+    setSkills((prev) => {
+      const next = prev.filter((s) => s.id !== id);
+      saveChatSkills(next);
+      return next;
+    });
+    setEnabledSkillIds((prev) => prev.filter((x) => x !== id));
+    message.success('已删除');
+  }, []);
 
   const skillsPopover = (
     <div style={{ maxWidth: 320, maxHeight: 320, overflow: 'auto' }}>
@@ -376,7 +365,7 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
             content={skillsPopover}
             placement="topLeft"
           >
-            <Button htmlType="button" size="small" icon={<ThunderboltOutlined />} disabled={busy}>
+            <Button htmlType="button" size="small" icon={<ThunderboltOutlined style={{ marginTop: 5 }}/>} disabled={busy}>
               Skills{enabledSkillIds.length ? `（${enabledSkillIds.length}）` : ''}
             </Button>
           </Popover>
@@ -514,9 +503,15 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
                 {s.builtIn ? '查看' : '编辑'}
               </Button>
               {!s.builtIn && (
-                <Button size="small" danger onClick={() => onDeleteSkill(s.id)}>
-                  删除
-                </Button>
+                <Popconfirm
+                  title="删除该 Skill？删除后不可恢复。"
+                  okText="删除"
+                  okType="danger"
+                  cancelText="取消"
+                  onConfirm={() => onDeleteSkill(s.id)}
+                >
+                  <Button size="small" danger>删除</Button>
+                </Popconfirm>
               )}
             </div>
           ))}
