@@ -61,6 +61,18 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
     setSkills(loadChatSkills());
   }, []);
 
+  useEffect(() => {
+    if (editOpen && editingSkill && !editingSkill.builtIn) {
+      skillForm.setFieldsValue({
+        name: editingSkill.name,
+        description: editingSkill.description,
+        body: editingSkill.body,
+      });
+    } else if (editOpen && !editingSkill) {
+      skillForm.resetFields();
+    }
+  }, [editOpen, editingSkill, skillForm]);
+
   const enabledSkillsPayload = useMemo(() => {
     return enabledSkillIds
       .map((id) => skills.find((s) => s.id === id))
@@ -140,21 +152,15 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
   const openCreateSkill = useCallback(() => {
     setSkillsPopoverOpen(false);
     setEditingSkill(null);
-    skillForm.resetFields();
     setEditOpen(true);
-  }, [skillForm]);
+  }, []);
 
   const openEditSkill = useCallback(
     (s: ChatSkillDef) => {
       setEditingSkill(s);
-      skillForm.setFieldsValue({
-        name: s.name,
-        description: s.description,
-        body: s.body,
-      });
       setEditOpen(true);
     },
-    [skillForm],
+    [],
   );
 
   const persistSkills = useCallback((next: ChatSkillDef[]) => {
@@ -211,13 +217,17 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
         okType: 'danger',
         cancelText: '取消',
         onOk: () => {
-          persistSkills(skills.filter((s) => s.id !== id));
+          setSkills((prev) => {
+            const next = prev.filter((s) => s.id !== id);
+            saveChatSkills(next);
+            return next;
+          });
           setEnabledSkillIds((prev) => prev.filter((x) => x !== id));
           message.success('已删除');
         },
       });
     },
-    [persistSkills, skills],
+    [],
   );
 
   const skillsPopover = (
@@ -234,9 +244,12 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
               onChange={(e) => toggleSkillEnabled(s.id, e.target.checked)}
             />
             <div style={{ minWidth: 0 }}>
-              <Text strong style={{ fontSize: 13 }}>
-                {s.name}
-              </Text>
+              <Space size={4}>
+                <Text strong style={{ fontSize: 13 }}>
+                  {s.name}
+                </Text>
+                {s.builtIn ? <Tag color="purple" style={{ marginInlineEnd: 0, fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>内置</Tag> : null}
+              </Space>
               {s.description ? (
                 <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>
                   {s.description}
@@ -487,68 +500,96 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
               }}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
-                <Text strong style={{ display: 'block' }}>
-                  {s.name}
-                </Text>
+                <Space size={6}>
+                  <Text strong>{s.name}</Text>
+                  {s.builtIn ? <Tag color="purple" style={{ marginInlineEnd: 0 }}>内置</Tag> : null}
+                </Space>
                 {s.description ? (
-                  <Text type="secondary" style={{ fontSize: 12 }}>
+                  <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>
                     {s.description}
                   </Text>
                 ) : null}
               </div>
               <Button size="small" onClick={() => openEditSkill(s)}>
-                编辑
+                {s.builtIn ? '查看' : '编辑'}
               </Button>
-              <Button size="small" danger onClick={() => onDeleteSkill(s.id)}>
-                删除
-              </Button>
+              {!s.builtIn && (
+                <Button size="small" danger onClick={() => onDeleteSkill(s.id)}>
+                  删除
+                </Button>
+              )}
             </div>
           ))}
         </Space>
       </Modal>
 
       <Modal
-        title={editingSkill ? '编辑 Skill' : '新建 Skill'}
+        title={editingSkill?.builtIn ? '查看内置 Skill' : editingSkill ? '编辑 Skill' : '新建 Skill'}
         open={editOpen}
         onCancel={() => setEditOpen(false)}
         onOk={() => void onSaveSkill()}
         okText="保存"
-        cancelText="取消"
+        cancelText={editingSkill?.builtIn ? '关闭' : '取消'}
+        okButtonProps={editingSkill?.builtIn ? { style: { display: 'none' } } : undefined}
         width={640}
-        destroyOnClose
       >
-        <Form form={skillForm} layout="vertical" preserve={false}>
-          <Form.Item
-            name="name"
-            label="名称"
-            rules={[{ required: true, message: '请填写名称' }]}
-          >
-            <Input placeholder="例如：PRD 评审助手" maxLength={120} showCount />
-          </Form.Item>
-          <Form.Item name="description" label="简短说明（可选）">
-            <Input placeholder="一句话说明用途，便于在列表中识别" maxLength={200} showCount />
-          </Form.Item>
-          <Form.Item
-            name="body"
-            label="指令正文"
-            rules={[{ required: true, message: '请填写指令正文' }]}
-            extra={
-              <Button
-                type="link"
-                size="small"
-                style={{ paddingLeft: 0 }}
-                onClick={() => skillForm.setFieldsValue({ body: CHAT_SKILL_AUTHORING_TEMPLATE })}
-              >
-                插入「Skill 编写模板」骨架
-              </Button>
-            }
-          >
-            <Input.TextArea
-              placeholder="写入要注入模型的完整规则、流程与输出格式…"
-              autoSize={{ minRows: 10, maxRows: 22 }}
-            />
-          </Form.Item>
-        </Form>
+        {editingSkill?.builtIn ? (
+          <Space direction="vertical" style={{ width: '100%' }} size={16}>
+            <div>
+              <Text type="secondary" style={{ fontSize: 12 }}>名称</Text>
+              <div style={{ marginTop: 4, padding: '6px 10px', background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 6, fontSize: 14 }}>
+                {editingSkill.name}
+              </div>
+            </div>
+            {editingSkill.description && (
+              <div>
+                <Text type="secondary" style={{ fontSize: 12 }}>简短说明</Text>
+                <div style={{ marginTop: 4, padding: '6px 10px', background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 6, fontSize: 14 }}>
+                  {editingSkill.description}
+                </div>
+              </div>
+            )}
+            <div>
+              <Text type="secondary" style={{ fontSize: 12 }}>指令正文</Text>
+              <div style={{ marginTop: 4, padding: '10px 12px', background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 6, fontSize: 13, whiteSpace: 'pre-wrap', lineHeight: 1.7, maxHeight: 360, overflow: 'auto' }}>
+                {editingSkill.body}
+              </div>
+            </div>
+          </Space>
+        ) : (
+          <Form form={skillForm} layout="vertical" preserve={false}>
+            <Form.Item
+              name="name"
+              label="名称"
+              rules={[{ required: true, message: '请填写名称' }]}
+            >
+              <Input placeholder="例如：PRD 评审助手" maxLength={120} showCount />
+            </Form.Item>
+            <Form.Item name="description" label="简短说明（可选）">
+              <Input placeholder="一句话说明用途，便于在列表中识别" maxLength={200} showCount />
+            </Form.Item>
+            <Form.Item
+              name="body"
+              label="指令正文"
+              rules={[{ required: true, message: '请填写指令正文' }]}
+              extra={
+                <Button
+                  type="link"
+                  size="small"
+                  style={{ paddingLeft: 0 }}
+                  onClick={() => skillForm.setFieldsValue({ body: CHAT_SKILL_AUTHORING_TEMPLATE })}
+                >
+                  插入「Skill 编写模板」骨架
+                </Button>
+              }
+            >
+              <Input.TextArea
+                placeholder="写入要注入模型的完整规则、流程与输出格式…"
+                autoSize={{ minRows: 10, maxRows: 22 }}
+              />
+            </Form.Item>
+          </Form>
+        )}
       </Modal>
     </div>
   );
