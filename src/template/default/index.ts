@@ -1,11 +1,39 @@
 /**
- * 默认模板：systemPrompt、instructions、skeletonCode（预览/消息用骨架 TSX）。
- * systemPrompt 留空时，应用侧使用 prompts/system 中的内置默认。
+ * 默认模板：instructions、skeletonCode（预览/消息用骨架 TSX）。
  */
 export const DEFAULT_TEMPLATE = {
   key: `list_standard`,
   label: `标准列表页（搜索 + 表格 + 抽屉）`,
-  systemPrompt: ``,
+  initialMessages: [
+    {
+      id: 'tpl-std-user-1',
+      role: 'user' as const,
+      content: `根据下方【产品描述 / PRD】生成前端页面：
+
+# 一、搜索栏
+- 订单号：选择框
+- 供应商：输入框
+- 取车时间：时间选择框
+
+# 二、操作栏
+- 新建订单按钮：点击后弹出弹窗，展示新建订单单窗
+
+# 三、表格项
+- 订单号：文本
+- 供应商：文本
+- 取车时间：日期时间
+- 订单状态：已完成或者已取消
+
+# 四、表格操作
+- 查看：点击后展示侧拉抽屉，抽屉内以只读形式展示该订单的全部字段信息。
+- 编辑：点击后展示侧拉抽屉，所有字段支持编辑修改，底部有提交按钮。`,
+    },
+    {
+      id: 'tpl-std-assistant-1',
+      role: 'assistant' as const,
+      content: '已根据需求生成标准列表页原型，包含搜索栏、操作栏、数据表格及查看/编辑抽屉。请在右侧预览面板查看效果。',
+    },
+  ],
   instructions: `根据下方【产品描述 / PRD】生成前端页面：
 
 以下为与用户输入格式对齐的 PRD 结构范例（实现以用户正文为准）：

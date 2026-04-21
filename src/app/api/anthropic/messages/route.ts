@@ -1,8 +1,12 @@
-import { buildAnthropicUserContent, SYSTEM_PROMPT } from '@/prompts/system';
+import { buildAnthropicUserContent } from '@/prompts/system';
 import { createAnthropicClient } from '@/server/anthropic/client';
 import { fileAttachmentToAnthropicBlocks } from '@/server/anthropic/fileAttachmentToContentBlocks';
 import { getAnthropicApiKey, getDefaultAnthropicModelId } from '@/server/anthropic/env';
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
+import {
+  buildSystemPromptFromSkills,
+  normalizeChatSkillsPayload,
+} from '@/server/anthropic/chatSkillsSystem';
+import type { ContentBlockParam, MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
@@ -13,6 +17,11 @@ type AttachmentBody = {
   url: string;
 };
 
+type MessageBody = {
+  role: 'user' | 'assistant';
+  content: string;
+};
+
 type Body = {
   prdText?: string;
   systemPrompt?: string;
@@ -20,6 +29,8 @@ type Body = {
   max_tokens?: number;
   templateKey?: string;
   attachments?: unknown;
+  skills?: unknown;
+  messages?: unknown;
 };
 
 function normalizeAttachments(raw: unknown): AttachmentBody[] {
@@ -33,6 +44,20 @@ function normalizeAttachments(raw: unknown): AttachmentBody[] {
     if (!mediaType || !url) continue;
     const filename = typeof o.filename === 'string' ? o.filename : undefined;
     out.push({ mediaType, filename, url });
+  }
+  return out;
+}
+
+function normalizeMessages(raw: unknown): MessageBody[] {
+  if (!Array.isArray(raw)) return [];
+  const out: MessageBody[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue;
+    const o = item as Record<string, unknown>;
+    const role = o.role;
+    const content = typeof o.content === 'string' ? o.content : '';
+    if ((role !== 'user' && role !== 'assistant') || !content) continue;
+    out.push({ role, content });
   }
   return out;
 }
@@ -57,7 +82,7 @@ export async function POST(req: Request) {
   const systemFromBody =
     typeof body.systemPrompt === 'string' && body.systemPrompt.length > 0
       ? body.systemPrompt
-      : SYSTEM_PROMPT;
+      : '';
   const model =
     typeof body.model === 'string' && body.model.length > 0 ? body.model : getDefaultAnthropicModelId();
   const maxTokens =
@@ -66,12 +91,34 @@ export async function POST(req: Request) {
   const templateKey =
     typeof body.templateKey === 'string' && body.templateKey.length > 0 ? body.templateKey : undefined;
 
-  const mainText = buildAnthropicUserContent({ prdText, templateKey });
-  const attachmentBlocks = normalizeAttachments(body.attachments).flatMap((a) =>
-    fileAttachmentToAnthropicBlocks(a),
-  );
-  const userContent: string | ContentBlockParam[] =
-    attachmentBlocks.length === 0 ? mainText : [{ type: 'text', text: mainText }, ...attachmentBlocks];
+  const skillsNorm = normalizeChatSkillsPayload(body.skills);
+  const skillsSystem = skillsNorm.length > 0 ? buildSystemPromptFromSkills(skillsNorm) : undefined;
+  const finalSystem = [systemFromBody, skillsSystem].filter(Boolean).join('\n\n---\n\n') || undefined;
+
+  const historyMessages = normalizeMessages(body.messages);
+
+  let messages: MessageParam[];
+  if (historyMessages.length > 0) {
+    messages = historyMessages.map((m) => ({ role: m.role, content: m.content }));
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg.role === 'user') {
+      const mainText = buildAnthropicUserContent({ prdText, templateKey });
+      const attachmentBlocks = normalizeAttachments(body.attachments).flatMap((a) =>
+        fileAttachmentToAnthropicBlocks(a),
+      );
+      const userContent: string | ContentBlockParam[] =
+        attachmentBlocks.length === 0 ? mainText : [{ type: 'text', text: mainText }, ...attachmentBlocks];
+      messages[messages.length - 1] = { role: 'user', content: userContent };
+    }
+  } else {
+    const mainText = buildAnthropicUserContent({ prdText, templateKey });
+    const attachmentBlocks = normalizeAttachments(body.attachments).flatMap((a) =>
+      fileAttachmentToAnthropicBlocks(a),
+    );
+    const userContent: string | ContentBlockParam[] =
+      attachmentBlocks.length === 0 ? mainText : [{ type: 'text', text: mainText }, ...attachmentBlocks];
+    messages = [{ role: 'user', content: userContent }];
+  }
 
   const anthropic = createAnthropicClient();
 
@@ -80,8 +127,8 @@ export async function POST(req: Request) {
     stream = anthropic.messages.stream({
       model,
       max_tokens: maxTokens,
-      system: systemFromBody,
-      messages: [{ role: 'user', content: userContent }],
+      ...(finalSystem ? { system: finalSystem } : {}),
+      messages,
       thinking: { type: 'disabled' },
     });
   } catch (e) {

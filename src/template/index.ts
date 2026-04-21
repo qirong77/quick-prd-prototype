@@ -1,15 +1,16 @@
 import { COMPLICATED_TEMPLATE } from './complicated';
 import { DEFAULT_TEMPLATE } from './default';
+import type { SerializedMessage } from '../lib/chatSessions';
 
 export type TemplateDef = {
   key: string;
   label: string;
-  /** 左侧「系统提示词」；留空则使用应用内置默认 */
-  systemPrompt: string;
   /** 左侧「需求描述」初始正文 */
   instructions: string;
   /** 预览与用户消息用的默认骨架 TSX */
   skeletonCode: string;
+  /** 内置会话填充的初始聊天记录 */
+  initialMessages?: readonly SerializedMessage[];
 };
 
 export const TEMPLATES: TemplateDef[] = [

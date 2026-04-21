@@ -21,8 +21,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Markdown from 'react-markdown';
 import { CHAT_SKILL_AUTHORING_TEMPLATE } from '../lib/chatSkills/authoringTemplate';
 import type { ChatSkillDef } from '../lib/chatSkills/types';
-import { loadChatSkills, newChatSkillId, saveChatSkills } from '../lib/chatSkills/storage';
+import { newChatSkillId, saveChatSkills } from '../lib/chatSkills/storage';
 import { ATTACHMENT_INPUT_ACCEPT, filesToFileUIParts, validateClientAttachmentFile } from '../lib/fileAttachmentsClient';
+import type { SerializedMessage } from '../lib/chatSessions';
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -31,6 +32,20 @@ export type AiChatPanelProps = {
   modelIds: string[];
   modelId: string;
   onModelId: (v: string) => void;
+  skills: ChatSkillDef[];
+  onSkills: React.Dispatch<React.SetStateAction<ChatSkillDef[]>>;
+  /** 开始新会话（与顶部入口共用同一逻辑） */
+  onNewChat: () => void;
+  /** 恢复会话时的初始消息 */
+  initialMessages?: SerializedMessage[];
+  /** 当最后一条助手消息文本变化时回调（用于驱动预览面板） */
+  onAssistantTextChange?: (text: string) => void;
+  /** 消息列表变化时回调，用于持久化 */
+  onMessagesChange?: (messages: SerializedMessage[]) => void;
+  /** 是否正在流式响应（向上暴露） */
+  onStreamingChange?: (streaming: boolean) => void;
+  /** 挂载时默认启用的 skill IDs（如内置会话自动激活「页面生成」） */
+  defaultEnabledSkillIds?: string[];
 };
 
 function textFromMessage(m: UIMessage): string {
@@ -44,12 +59,43 @@ function textFromMessage(m: UIMessage): string {
   return lines.join('\n');
 }
 
-export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onModelId }) => {
+function uiMessagesToSerialized(msgs: UIMessage[]): SerializedMessage[] {
+  return msgs
+    .filter((m) => m.role === 'user' || m.role === 'assistant')
+    .map((m) => ({
+      id: m.id,
+      role: m.role as 'user' | 'assistant',
+      content: textFromMessage(m),
+    }));
+}
+
+function serializedToInitialMessages(msgs: SerializedMessage[]): UIMessage[] {
+  return msgs.map((m) => ({
+    id: m.id,
+    role: m.role,
+    parts: [{ type: 'text' as const, text: m.content }],
+    createdAt: new Date(),
+  }));
+}
+
+export const AiChatPanel: React.FC<AiChatPanelProps> = ({
+  modelIds,
+  modelId,
+  onModelId,
+  skills,
+  onSkills,
+  onNewChat,
+  initialMessages,
+  onAssistantTextChange,
+  onMessagesChange,
+  onStreamingChange,
+  defaultEnabledSkillIds,
+}) => {
   const [draft, setDraft] = useState('');
   const [pendingFiles, setPendingFiles] = useState<FileUIPart[]>([]);
-  const [skills, setSkills] = useState<ChatSkillDef[]>(() => loadChatSkills());
-  /** 本轮对话注入顺序：排在后的 Skill 更靠下合并进 system */
-  const [enabledSkillIds, setEnabledSkillIds] = useState<string[]>([]);
+  const [enabledSkillIds, setEnabledSkillIds] = useState<string[]>(
+    () => defaultEnabledSkillIds ?? [],
+  );
   const [skillsPopoverOpen, setSkillsPopoverOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -57,10 +103,6 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
   const [skillForm] = Form.useForm<{ name: string; description?: string; body: string }>();
   const listRef = useRef<HTMLDivElement | null>(null);
   const chatFileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    setSkills(loadChatSkills());
-  }, []);
 
   useEffect(() => {
     if (editOpen && editingSkill && !editingSkill.builtIn) {
@@ -81,20 +123,30 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
       .map(({ name, description, body }) => ({ name, description, body }));
   }, [enabledSkillIds, skills]);
 
+  // 用 ref 保存最新值，让 transport 闭包始终能读到最新的 skills 和 model
+  const enabledSkillsPayloadRef = useRef(enabledSkillsPayload);
+  const modelIdRef = useRef(modelId);
+  useEffect(() => { enabledSkillsPayloadRef.current = enabledSkillsPayload; }, [enabledSkillsPayload]);
+  useEffect(() => { modelIdRef.current = modelId; }, [modelId]);
+
+  // transport 只创建一次，避免 useChat 因引用变化重新初始化丢失闭包状态
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: '/api/chat',
-        prepareSendMessagesRequest: ({ id, messages }) => ({
-          body: {
-            id,
-            messages,
-            model: modelId,
-            ...(enabledSkillsPayload.length > 0 ? { skills: enabledSkillsPayload } : {}),
-          },
-        }),
+        prepareSendMessagesRequest: ({ id, messages }) => {
+          const payload = enabledSkillsPayloadRef.current;
+          return {
+            body: {
+              id,
+              messages,
+              model: modelIdRef.current,
+              ...(payload.length > 0 ? { skills: payload } : {}),
+            },
+          };
+        },
       }),
-    [enabledSkillsPayload, modelId],
+    [],
   );
 
   const { messages, sendMessage, status, stop, setMessages, error, clearError } = useChat({
@@ -104,13 +156,44 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
     },
   });
 
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (!initializedRef.current && initialMessages?.length) {
+      initializedRef.current = true;
+      setMessages(serializedToInitialMessages(initialMessages));
+    }
+  }, [initialMessages, setMessages]);
+
   const busy = status === 'submitted' || status === 'streaming';
+
+  useEffect(() => {
+    onStreamingChange?.(busy);
+  }, [busy, onStreamingChange]);
 
   useEffect(() => {
     const el = listRef.current;
     if (!el) return;
     el.scrollTop = el.scrollHeight;
   }, [messages, status]);
+
+  useEffect(() => {
+    if (messages.length === 0) {
+      onAssistantTextChange?.('');
+      return;
+    }
+    const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant');
+    if (lastAssistant) {
+      onAssistantTextChange?.(textFromMessage(lastAssistant));
+    }
+  }, [messages, status, onAssistantTextChange]);
+
+  const prevMsgCountRef = useRef(messages.length);
+  useEffect(() => {
+    if (!busy && messages.length > 0 && messages.length !== prevMsgCountRef.current) {
+      onMessagesChange?.(uiMessagesToSerialized(messages));
+    }
+    prevMsgCountRef.current = messages.length;
+  }, [busy, messages, onMessagesChange]);
 
   const onPickChatFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const picked = e.target.files ? Array.from(e.target.files) : [];
@@ -165,9 +248,9 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
   );
 
   const persistSkills = useCallback((next: ChatSkillDef[]) => {
-    setSkills(next);
+    onSkills(next);
     saveChatSkills(next);
-  }, []);
+  }, [onSkills]);
 
   const onSaveSkill = useCallback(async () => {
     try {
@@ -205,19 +288,19 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
       }
       setEditOpen(false);
     } catch {
-      // 表单校验失败
+      // form validation failed
     }
   }, [editingSkill, persistSkills, skillForm, skills]);
 
   const onDeleteSkill = useCallback((id: string) => {
-    setSkills((prev) => {
+    onSkills((prev) => {
       const next = prev.filter((s) => s.id !== id);
       saveChatSkills(next);
       return next;
     });
     setEnabledSkillIds((prev) => prev.filter((x) => x !== id));
     message.success('已删除');
-  }, []);
+  }, [onSkills]);
 
   const skillsPopover = (
     <div style={{ maxWidth: 320, maxHeight: 320, overflow: 'auto' }}>
@@ -365,19 +448,17 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
             content={skillsPopover}
             placement="topLeft"
           >
-            <Button htmlType="button" size="small" icon={<ThunderboltOutlined style={{ marginTop: 5 }}/>} disabled={busy}>
+            <Button
+              className="skill-button"
+              type={enabledSkillIds.length > 0 ? 'primary' : 'default'}
+              htmlType="button"
+              size="small"
+              icon={<ThunderboltOutlined style={{ marginTop: 2 }} />}
+              disabled={busy}
+            >
               Skills{enabledSkillIds.length ? `（${enabledSkillIds.length}）` : ''}
             </Button>
           </Popover>
-          <Button
-            htmlType="button"
-            size="small"
-            icon={<SettingOutlined />}
-            disabled={busy}
-            onClick={() => setManageOpen(true)}
-          >
-            管理 Skills
-          </Button>
           {pendingFiles.map((a, i) => (
             <Tag
               key={`${a.filename ?? ''}-${i}-${a.url.slice(0, 24)}`}
@@ -428,28 +509,24 @@ export const AiChatPanel: React.FC<AiChatPanelProps> = ({ modelIds, modelId, onM
       />
 
       <div className="chat-panel-actions" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <Button
-          type="primary"
-          onClick={() => void onSend()}
-          loading={busy}
-          disabled={!draft.trim() && pendingFiles.length === 0}
-        >
-          发送
-        </Button>
-        <Button onClick={() => void stop()} disabled={!busy}>
-          停止
-        </Button>
-        <Button
-          onClick={() => {
-            setMessages([]);
-            clearError();
-          }}
-          disabled={messages.length === 0 || busy}
-        >
-          清空
+        {busy ? (
+          <Button type="primary" onClick={() => void stop()}>
+            停止
+          </Button>
+        ) : (
+          <Button
+            type="primary"
+            onClick={() => void onSend()}
+            disabled={!draft.trim() && pendingFiles.length === 0}
+          >
+            发送
+          </Button>
+        )}
+        <Button icon={<PlusOutlined />} onClick={onNewChat} disabled={busy}>
+          新建聊天
         </Button>
         <Select
-          style={{ marginLeft: 'auto', minWidth: 200, maxWidth: 280, flex: '1 1 200px' }}
+          style={{ marginLeft: 'auto', maxWidth: 180, flex: '1 1 200px' }}
           value={modelId}
           onChange={onModelId}
           disabled={busy}

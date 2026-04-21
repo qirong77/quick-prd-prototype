@@ -105,54 +105,60 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
         style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}
         activeKey={activeTabKey}
         onChange={onTabChange}
-      >
-        <Tabs.TabPane tab="预览" key="preview">
-          <div className="preview-tab-preview-root">
-            <Spin
-              spinning={loading}
-              size="large"
-              tip="正在生成，请稍候…"
-              wrapperClassName="preview-spin-fill"
-            >
-              <div className="preview-tab-scroll-inner">
-                {validationError ? (
-                  <Alert type="warning" showIcon message={validationError} style={{ marginBottom: 12 }} />
-                ) : null}
-                {shouldRun ? (
-                  <RunnerPreview key={runnerCode} code={runnerCode} scope={scope} />
-                ) : null}
+        items={[
+          {
+            key: 'preview',
+            label: '预览',
+            children: (
+              <div className="preview-tab-preview-root">
+                <Spin
+                  spinning={loading}
+                  size="large"
+                  tip="正在生成，请稍候…"
+                  wrapperClassName="preview-spin-fill"
+                >
+                  <div className="preview-tab-scroll-inner">
+                    {validationError ? (
+                      <Alert type="warning" showIcon message={validationError} style={{ marginBottom: 12 }} />
+                    ) : null}
+                    {shouldRun ? (
+                      <RunnerPreview key={runnerCode} code={runnerCode} scope={scope} />
+                    ) : null}
+                  </div>
+                </Spin>
               </div>
-            </Spin>
-          </div>
-        </Tabs.TabPane>
-        <Tabs.TabPane
-          tab={
-            <span className="preview-panel-log-tab-label">
-              {loading ? <LoadingOutlined className="preview-panel-log-tab-spinner" spin /> : null}
-              日志
-            </span>
-          }
-          key="log"
-        >
-          <div className="preview-log-tab">
-            <Space direction="vertical" size="small" style={{ width: '100%', flexShrink: 0 }}>
-              <Paragraph
-                copyable={{ text: streamingText }}
-                style={{ marginBottom: 0, color: 'var(--app-text-muted)', fontSize: 13 }}
-              >
-                {loading
-                  ? streamingText.trim()
-                    ? '流式接收中，下方为当前已累积的完整原文。'
-                    : '等待模型输出…'
-                  : streamingText.trim()
-                    ? '以下为本次请求返回的完整原文（含思考过程）；预览中的 tsx 仍从 ```tsx 提取。'
-                    : '尚无模型返回内容。'}
-              </Paragraph>
-            </Space>
-            <pre className="preview-log-body">{streamingText}</pre>
-          </div>
-        </Tabs.TabPane>
-      </Tabs>
+            ),
+          },
+          {
+            key: 'log',
+            label: (
+              <span className="preview-panel-log-tab-label">
+                {loading ? <LoadingOutlined className="preview-panel-log-tab-spinner" spin /> : null}
+                日志
+              </span>
+            ),
+            children: (
+              <div className="preview-log-tab">
+                <Space direction="vertical" size="small" style={{ width: '100%', flexShrink: 0 }}>
+                  <Paragraph
+                    copyable={{ text: streamingText }}
+                    style={{ marginBottom: 0, color: 'var(--app-text-muted)', fontSize: 13 }}
+                  >
+                    {loading
+                      ? streamingText.trim()
+                        ? '流式接收中，下方为当前已累积的完整原文。'
+                        : '等待模型输出…'
+                      : streamingText.trim()
+                        ? '以下为本次请求返回的完整原文（含思考过程）；预览中的 tsx 仍从 ```tsx 提取。'
+                        : '尚无模型返回内容。'}
+                  </Paragraph>
+                </Space>
+                <pre className="preview-log-body">{streamingText}</pre>
+              </div>
+            ),
+          },
+        ]}
+      />
     </Card>
   );
 };

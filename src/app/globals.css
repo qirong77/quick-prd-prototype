@@ -14,7 +14,9 @@
   --app-header-h: 56px;
   --app-content-pad-y: 44px;
 }
-
+button.ant-btn > .anticon + span, .ant-btn > span + .anticon {
+  margin-left: 4px;
+}
 html,
 body {
   height: 100%;

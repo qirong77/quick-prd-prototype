@@ -1,5 +1,4 @@
 import type { NextConfig } from 'next';
-
 /** 打包/启动 dev 时写入客户端，使用 Asia/Shanghai（北京时间） */
 function buildTimeBeijing(): string {
   return new Intl.DateTimeFormat('zh-CN', {
@@ -21,6 +20,9 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_BUILD_TIME_BJ: buildTimeBeijing(),
   },
+  turbopack:{
+    root: process.cwd(),
+  }
 };
 
 export default nextConfig;

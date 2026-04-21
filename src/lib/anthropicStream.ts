@@ -3,9 +3,20 @@ import type { FileUIPart } from 'ai';
 /** 与聊天附件结构一致，随 PRD 提交给 `/api/anthropic/messages` */
 export type StreamAttachment = FileUIPart;
 
+export type SkillPayload = {
+  name: string;
+  description?: string;
+  body: string;
+};
+
+export type GenerateMessage = {
+  role: 'user' | 'assistant';
+  content: string;
+};
+
 export type StreamRequestBody = {
   prdText: string;
-  /** 为空时由服务端回退为默认 SYSTEM_PROMPT */
+  /** 为空时服务端不设置系统提示词 */
   systemPrompt?: string;
   model?: string;
   max_tokens?: number;
@@ -13,6 +24,10 @@ export type StreamRequestBody = {
   templateKey?: string;
   /** 随 PRD 一并提交的参考图、文本文件等 */
   attachments?: StreamAttachment[];
+  /** 启用的 Skills，合并到 system prompt */
+  skills?: SkillPayload[];
+  /** 多轮对话历史（包含当前这轮的 user 消息） */
+  messages?: GenerateMessage[];
 };
 
 /**
